@@ -98,14 +98,14 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	
 	# setting timezone
 	echo "Setting Timezone"
-	echo 'timedatectl set-timezone Europe/Lisbon' | arch-chroot /mnt
+	arch-chroot /mnt timedatectl set-timezone Europe/Lisbon
 	#read -p "Press Enter to continue."
 	#echo ""
 	
 	# generate /etc/adjtime
 	echo "Generate /etc/adjtime"
-	echo 'hwclock --systohc' | arch-chroot /mnt
-	#read -p "Press Enter to continue."
+	arch-chroot /mnt hwclock --systohc
+	read -p "Press Enter to continue."
 	#echo ""
 		
 	# select locale
