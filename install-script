@@ -3,7 +3,7 @@
 # REQUIREMENTS
 # 1- Internet connection
 #
-
+set -x # echo on
 export PARTITION_BOOT=/dev/vda1
 export PARTITION_ROOT=/dev/vda3
 export PARTITION_SWAP=/dev/vda2
@@ -13,6 +13,8 @@ export GRUB_UEFI_NAME=archlinux
 export HOST_NAME=archx64
 export KEYMAP=pt-latin1
 export LOCALE=en_US.UTF-8
+
+export USER_NAME=vuser
 
 PACSTRAP_PKG_LIST="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 
@@ -194,6 +196,17 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	#read -p "Press Enter to continue."
 	echo ""
 	
+	# config visudo
+	echo "Config Visudo"
+	arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+	echo ""
+	
+	# Create a new user and add it to the wheel group and force user to change password at next login.
+	echo "Creating $USER_NAME profile "
+	arch-chroot /mnt useradd -m -G wheel $USER_NAME
+	arch-chroot /mnt passwd -e $USERNAME 
+	echo ""
+	
 	read -p "Instalation Done. Please reboot."
 	exit
 				
@@ -208,3 +221,5 @@ fi
 # https://stackoverflow.com/questions/1885525/how-do-i-prompt-a-user-for-confirmation-in-bash-script
 # https://askubuntu.com/questions/1705/how-can-i-create-a-select-menu-in-a-shell-script
 # https://serverfault.com/questions/7503/how-to-determine-if-a-bash-variable-is-empty
+# https://github.com/honze-net/dalu/blob/main/example.sh
+# https://github.com/jleclanche/dotfiles/blob/master/install-arch.sh
