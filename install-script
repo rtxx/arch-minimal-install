@@ -41,7 +41,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		echo "Aborting..."
 		exit
 	fi
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 		
 	echo "Mounting partitions"
@@ -49,13 +49,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	mkdir /mnt/{boot,home}
 	mount $PARTITION_BOOT /mnt/boot
 	swapon $PARTITION_SWAP
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# pacstrap new packages
 	echo "Installing packages with pacstrap"
 	pacstrap /mnt $PACSTRAP_PKG_LIST
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 		
 	echo "Microde to install:"
@@ -81,13 +81,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		    *) echo "invalid option $REPLY";;
 		esac
 	done
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# fstab gen
 	echo "Generating fstab"
 	genfstab -U /mnt >> /mnt/etc/fstab
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 		
 	# chroot into the new system
@@ -99,13 +99,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# setting timezone
 	echo "Setting Timezone"
 	arch-chroot /mnt timedatectl set-timezone Europe/Lisbon
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# generate /etc/adjtime
 	echo "Generate /etc/adjtime"
 	arch-chroot /mnt hwclock --systohc
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 		
 	# select locale
@@ -120,21 +120,21 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo "Creating locale.conf"
 	#arch-chroot /mnt echo "LANG=$LOCALE" >> /etc/locale.conf
 	echo "LANG=$LOCALE" >> /mnt/etc/locale.conf
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# setting keyboard layout 
 	echo "Setting keyboard layout"
 	#arch-chroot /mnt echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf
 	echo "KEYMAP=$KEYMAP" >> /mnt/etc/vconsole.conf
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# setting hostname 
 	echo "Setting host name"
 	#arch-chroot /mnt echo "$HOSTNAME" >> /etc/hostname
 	echo "$HOSTNAME" >> /mnt/etc/hostname
-	read -p "Press Enter to continue."	
+	#read -p "Press Enter to continue."	
 	echo ""
 	
 	# setting hosts file 
@@ -143,11 +143,17 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /mnt/etc/hosts
 	#read -p "Press Enter to continue."
 	#echo ""
-		
+	
+	# enable networkmanager service 
+	echo "Enable networkmanager service"
+	arch-chroot /mnt systemctl enable NetworkManager.service
+	#read -p "Press Enter to continue."		
+	echo ""		
+	
 	# recreate initramfs 
 	echo "Recreate initramfs"
 	arch-chroot /mnt mkinitcpio -P
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	echo "GRUB Install:"
@@ -173,26 +179,21 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		    *) echo "invalid option $REPLY";;
 		esac
 	done
-	read -p "Press Enter to continue."	
+	#read -p "Press Enter to continue."	
 	echo ""
 	
 	# generate main config file for grub
 	echo "Generate main config file for grub"
 	arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
 	# set root password
 	echo "Set root password"
 	arch-chroot /mnt passwd
-	read -p "Press Enter to continue."
+	#read -p "Press Enter to continue."
 	echo ""
 	
-	# enable networkmanager service 
-	echo "Enable networkmanager service"
-	arch-chroot /mnt systemctl enable NetworkManager.service
-	read -p "Press Enter to continue."		
-	echo ""
 	read -p "Instalation Done. Please reboot."
 	exit
 				
