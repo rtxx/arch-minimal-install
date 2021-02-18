@@ -236,12 +236,15 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		echo "TERMINAL=xterm" >> /mnt/etc/environment
 		echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /mnt/etc/nanorc
 		echo "set mouse" >> /mnt/etc/nanorc
+
+		echo "QT_QPA_PLATAFORMTHEME=qt5ct" >> /mnt/etc/environment
 		
 		arch-chroot /mnt systemctl enable lightdm
 		
-		arch-chroot /mnt ufw enable
-		arch-chroot /mnt systemctl enable ufw
-		arch-chroot /mnt systemctl start ufw
+		#arch-chroot /mnt ufw enable
+		#arch-chroot /mnt systemctl enable ufw
+		#arch-chroot /mnt systemctl start ufw
+		
 	fi
 	
 	read -p "Instalation Done. Please reboot."
