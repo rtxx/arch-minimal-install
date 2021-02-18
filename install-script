@@ -3,7 +3,7 @@
 # REQUIREMENTS
 # 1- Internet connection
 #
-set -x # echo on
+#set -x # echo on
 export PARTITION_BOOT=/dev/vda1
 export PARTITION_ROOT=/dev/vda3
 export PARTITION_SWAP=/dev/vda2
