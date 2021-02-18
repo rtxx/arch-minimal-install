@@ -206,8 +206,9 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# Create a new user and add it to the wheel group and force user to change password at next login.
 	echo "Creating $USER_NAME profile "
 	arch-chroot /mnt useradd -m -G wheel $USER_NAME
+	echo "Please enter $USER_NAME password "
 	arch-chroot /mnt passwd $USER_NAME
-	arch-chroot /mnt passwd -e $USER_NAME
+	#arch-chroot /mnt passwd -e $USER_NAME
 	echo ""
 	
 	# Basic pacman configuration
