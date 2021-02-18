@@ -4,11 +4,11 @@
 # 1- Internet connection
 #
 
-export PARTITION_BOOT=
-export PARTITION_ROOT=
-export PARTITION_SWAP=
-export GRUB_MBR_LOCATION=
-export GRUB_UEFI_NAME=
+export PARTITION_BOOT=/dev/vda1
+export PARTITION_ROOT=/dev/vda3
+export PARTITION_SWAP=/dev/vda2
+export GRUB_MBR_LOCATION=/dev/vda
+export GRUB_UEFI_NAME=archlinux
 
 export HOST_NAME=archx64
 export KEYMAP=pt-latin1
