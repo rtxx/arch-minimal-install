@@ -19,6 +19,7 @@ export TEMP_PASSWORD=0000
 
 PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
+PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-fantasque-sans-mono xterm htop nethogs arandr volumeicon dunst feh picom udiskie unclutter xorg-xinput xfce4-power-manager tlp cpupower polkit polkit-gnome polkit-qt5 networkmanager breeze breeze-gtk qt5ct lxappearance capitaine-cursors arc-icon-theme archlinux-wallpaper thunar mousepad firefox neofetch scrot xdg-user-dirs lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings git gvfs powertop pulseaudio pulseaudio-alsa alsa-utils pavucontrol  ufw gufw gnome-keyring seahorse nano-syntax-highlighting"
 
 echo "arch minimal script install"
 
@@ -206,8 +207,8 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# Create a new user and add it to the wheel group and force user to change password at next login.
 	echo "Creating $USER_NAME profile "
 	arch-chroot /mnt useradd -m -G wheel $USER_NAME
-	arch-chroot /mnt echo $USERNAME:$PASSWORD | chpasswd
-	arch-chroot /mnt passwd -e $USERNAME 
+	arch-chroot /mnt passwd $USER_NAME
+	arch-chroot /mnt passwd -e $USER_NAME
 	echo ""
 	
 	# Basic pacman configuration
@@ -224,9 +225,26 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		# X install
 		echo "X Install"
 		pacstrap /mnt $PACSTRAP_PKG_LIST_X
+		
+		# Intel drivers
+		pacstrap /mnt xf86-video-intel mesa lib32-mesa
+		
+		echo "i3 install"
+		pacstrap /mnt PACSTRAP_PKG_LIST_I3
+		arch-chroot /mnt xdg-user-dirs-update
+		
+		echo "TERMINAL=xterm" >> /mnt/etc/environment
+		echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /mnt/etc/nanorc
+		echo "set mouse" >> /mnt/etc/nanorc
+		
+		arch-chroot /mnt systemctl enable lightdm
+		
+		arch-chroot /mnt ufw enable
+		arch-chroot /mnt systemctl enable ufw
+		arch-chroot /mnt systemctl start ufw
 	fi
 
-	
+	read -p "Please run arch-chroot /mnt passwd $USER_NAME"
 	read -p "Instalation Done. Please reboot."
 	exit
 				
