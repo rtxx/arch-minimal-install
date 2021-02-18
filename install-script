@@ -132,15 +132,15 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	
 	# setting hostname 
 	echo "Setting host name"
-	#arch-chroot /mnt echo "$HOSTNAME" >> /etc/hostname
-	echo "$HOSTNAME" >> /mnt/etc/hostname
+	#arch-chroot /mnt echo "$HOST_NAME" >> /etc/hostname
+	echo "$HOST_NAME" >> /mnt/etc/hostname
 	#read -p "Press Enter to continue."	
 	echo ""
 	
 	# setting hosts file 
 	echo "Setting hosts file"
 	#arch-chroot /mnt echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /etc/hosts
-	echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /mnt/etc/hosts
+	echo -e "127.0.0.1	localhost\n::1	localhost\n127.0.1.1	$HOST_NAME.localdomain	$HOST_NAME" >> /mnt/etc/hosts
 	#read -p "Press Enter to continue."
 	#echo ""
 	
