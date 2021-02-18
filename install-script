@@ -91,63 +91,64 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo ""
 		
 	# chroot into the new system
-	echo "chroot into the new system"
-	arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	#echo "chroot into the new system"
+	#arch-chroot /mnt
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	# setting timezone
 	echo "Setting Timezone"
-	timedatectl set-timezone Europe/Lisbon
+	echo 'timedatectl set-timezone Europe/Lisbon' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# generate /etc/adjtime
 	echo "Generate /etc/adjtime"
-	hwclock --systohc
+	'echo hwclock --systohc' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 		
 	# select locale
 	echo "Select/Uncomment locale $LOCALE"
-	nano /etc/locale.gen
-	locale-gen
+	#nano /etc/locale.gen
+	'echo sed -i "s/#$LOCALE/$LOCALE/" /etc/locale.gen' | arch-chroot /mnt
+	echo 'locale-gen' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# create locale.conf
 	echo "Creating locale.conf"
-	echo "LANG=$LOCALE" >> /etc/locale.conf
+	echo 'echo "LANG=$LOCALE" >> /etc/locale.conf' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# setting keyboard layout 
 	echo "Setting keyboard layout"
-	echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf
+	echo 'echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# setting hostname 
 	echo "Setting host name"
-	echo "$HOSTNAME" >> /etc/hostname
+	echo 'echo "$HOSTNAME" >> /etc/hostname' | arch-chroot /mnt
 	read -p "Press Enter to continue."	
 	echo ""
 	
 	# setting keyboard layout 
 	echo "Setting keyboard layout"
-	echo -e "127.0.0.1	localhost\n::1		localhost\n127.0.1.1	$HOSTNAME.localdomain	$HOSTNAME" >> /etc/hosts
+	echo 'echo -e "127.0.0.1	localhost\n::1		localhost\n127.0.1.1	$HOSTNAME.localdomain	$HOSTNAME" >> /etc/hosts' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# enable networkmanager service 
 	echo "Enable networkmanager service"
-	systemctl enable NetworkManager.service
+	echo 'systemctl enable NetworkManager.service' | arch-chroot /mnt
 	read -p "Press Enter to continue."		
 	echo ""
 	
 	# recreate initramfs 
 	echo "Recreate initramfs"
-	mkinitcpio -P
+	echo 'mkinitcpio -P' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
@@ -157,11 +158,11 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	do
 		case $opt in
 		    "MBR")
-		        grub-install --target=i386-pc $GRUB_MBR_LOCATION
+		        echo 'grub-install --target=i386-pc $GRUB_MBR_LOCATION' | arch-chroot /mnt
 		        break
 		        ;;
 		    "UEFI")
-		        grub-install --target=x86_64-efi --efi-directory=/mnt/boot --bootloader-id=$GRUB_UEFI_NAME
+		        echo 'grub-install --target=x86_64-efi --efi-directory=/mnt/boot --bootloader-id=$GRUB_UEFI_NAME' | arch-chroot /mnt
 		        break
 		        ;;
 		    "Dont install")
@@ -179,13 +180,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	
 	# generate main config file for grub
 	echo "Generate main config file for grub"
-	grub-mkconfig -o /boot/grub/grub.cfg
+	echo 'grub-mkconfig -o /boot/grub/grub.cfg' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
 	# set root password
 	echo "Set root password"
-	passwd
+	echo 'passwd' | arch-chroot /mnt
 	read -p "Press Enter to continue."
 	echo ""
 	
