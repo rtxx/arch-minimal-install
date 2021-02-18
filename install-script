@@ -130,7 +130,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	
 	# setting hostname 
 	echo "Setting host name"
-	echo 'echo "$HOSTNAME" >> /etc/hostname' | arch-chroot /mnt
+	arch-chroot /mnt echo "$HOSTNAME" >> /etc/hostname
 	read -p "Press Enter to continue."	
 	echo ""
 	
