@@ -4,15 +4,15 @@
 # 1- Internet connection
 #
 
-PARTITION_BOOT=
-PARTITION_ROOT=
-PARTITION_SWAP=
-GRUB_MBR_LOCATION=
-GRUB_UEFI_NAME=
+export PARTITION_BOOT=
+export PARTITION_ROOT=
+export PARTITION_SWAP=
+export GRUB_MBR_LOCATION=
+export GRUB_UEFI_NAME=
 
-HOSTNAME=archx64
-KEYMAP=pt-latin1
-LOCALE=en_US.UTF-8
+export HOST_NAME=archx64
+export KEYMAP=pt-latin1
+export LOCALE=en_US.UTF-8
 
 PACSTRAP_PKG_LIST="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 
@@ -27,10 +27,10 @@ fi
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	lsblk -f
 	echo ""
-    echo Formating $PARTITION_BOOT as boot
-    echo Formating $PARTITION_SWAP as swap
-    echo Formating $PARTITION_ROOT as root
-    read -p "Continue? " -n 1 -r
+	echo Formating $PARTITION_BOOT as boot
+	echo Formating $PARTITION_SWAP as swap
+	echo Formating $PARTITION_ROOT as root
+	read -p "Continue? " -n 1 -r
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
@@ -99,22 +99,22 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# setting timezone
 	echo "Setting Timezone"
 	echo 'timedatectl set-timezone Europe/Lisbon' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	# generate /etc/adjtime
 	echo "Generate /etc/adjtime"
-	'echo hwclock --systohc' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	echo 'hwclock --systohc' | arch-chroot /mnt
+	#read -p "Press Enter to continue."
+	#echo ""
 		
 	# select locale
 	echo "Select/Uncomment locale $LOCALE"
 	#nano /etc/locale.gen
-	'echo sed -i "s/#$LOCALE/$LOCALE/" /etc/locale.gen' | arch-chroot /mnt
+	echo 'sed -i "s/#$LOCALE/$LOCALE/" /etc/locale.gen' | arch-chroot /mnt
 	echo 'locale-gen' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	# create locale.conf
 	echo "Creating locale.conf"
@@ -125,32 +125,32 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# setting keyboard layout 
 	echo "Setting keyboard layout"
 	echo 'echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	# setting hostname 
 	echo "Setting host name"
 	echo 'echo "$HOSTNAME" >> /etc/hostname' | arch-chroot /mnt
-	read -p "Press Enter to continue."	
-	echo ""
+	#read -p "Press Enter to continue."	
+	#echo ""
 	
-	# setting keyboard layout 
-	echo "Setting keyboard layout"
-	echo 'echo -e "127.0.0.1	localhost\n::1		localhost\n127.0.1.1	$HOSTNAME.localdomain	$HOSTNAME" >> /etc/hosts' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	# setting hosts file 
+	echo "Setting hosts file"
+	echo 'echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /etc/hosts' | arch-chroot /mnt
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	# enable networkmanager service 
 	echo "Enable networkmanager service"
 	echo 'systemctl enable NetworkManager.service' | arch-chroot /mnt
-	read -p "Press Enter to continue."		
-	echo ""
+	#read -p "Press Enter to continue."		
+	#echo ""
 	
 	# recreate initramfs 
 	echo "Recreate initramfs"
 	echo 'mkinitcpio -P' | arch-chroot /mnt
-	read -p "Press Enter to continue."
-	echo ""
+	#read -p "Press Enter to continue."
+	#echo ""
 	
 	echo "GRUB Install:"
 	options=("MBR" "UEFI" "Dont install" "Abort")
