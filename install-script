@@ -15,6 +15,7 @@ export KEYMAP=pt-latin1
 export LOCALE=en_US.UTF-8
 
 export USER_NAME=vuser
+export TEMP_PASSWORD=0000
 
 PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
@@ -205,13 +206,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	# Create a new user and add it to the wheel group and force user to change password at next login.
 	echo "Creating $USER_NAME profile "
 	arch-chroot /mnt useradd -m -G wheel $USER_NAME
+	arch-chroot /mnt echo $USERNAME:$PASSWORD | chpasswd
 	arch-chroot /mnt passwd -e $USERNAME 
 	echo ""
 	
 	# Basic pacman configuration
 	echo "pacman configuration "
 	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
-	#arch-chroot /mnt sed -i "s/#[multilib]/[multilib]/" /etc/pacman.conf
 	arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	echo ""
 	
