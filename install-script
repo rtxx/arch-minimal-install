@@ -230,7 +230,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		pacstrap /mnt xf86-video-intel mesa lib32-mesa
 		
 		echo "i3 install"
-		pacstrap /mnt PACSTRAP_PKG_LIST_I3
+		pacstrap /mnt $PACSTRAP_PKG_LIST_I3
 		arch-chroot /mnt xdg-user-dirs-update
 		
 		echo "TERMINAL=xterm" >> /mnt/etc/environment
