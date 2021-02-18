@@ -15,7 +15,6 @@ export KEYMAP=pt-latin1
 export LOCALE=en_US.UTF-8
 
 export USER_NAME=vuser
-export TEMP_PASSWORD=0000
 
 PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
@@ -243,8 +242,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		arch-chroot /mnt systemctl enable ufw
 		arch-chroot /mnt systemctl start ufw
 	fi
-
-	read -p "Please run arch-chroot /mnt passwd $USER_NAME"
+	
 	read -p "Instalation Done. Please reboot."
 	exit
 				
