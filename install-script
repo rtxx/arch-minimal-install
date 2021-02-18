@@ -16,7 +16,8 @@ export LOCALE=en_US.UTF-8
 
 export USER_NAME=vuser
 
-PACSTRAP_PKG_LIST="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
+PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
+PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
 
 echo "arch minimal script install"
 
@@ -56,7 +57,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	
 	# pacstrap new packages
 	echo "Installing packages with pacstrap"
-	pacstrap /mnt $PACSTRAP_PKG_LIST
+	pacstrap /mnt $PACSTRAP_PKG_LIST_BASE
 	#read -p "Press Enter to continue."
 	echo ""
 		
@@ -207,6 +208,24 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	arch-chroot /mnt passwd -e $USERNAME 
 	echo ""
 	
+	# Basic pacman configuration
+	echo "pacman configuration "
+	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
+	#arch-chroot /mnt sed -i "s/#[multilib]/[multilib]/" /etc/pacman.conf
+	arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+	echo ""
+	
+	echo "Install X Server and i3?"
+	read -p "Continue? " -n 1 -r
+	echo
+	if [[ $REPLY =~ ^[Yy]$ ]]
+	then
+		# X install
+		echo "X Install"
+		pacstrap /mnt $PACSTRAP_PKG_LIST_X
+	fi
+
+	
 	read -p "Instalation Done. Please reboot."
 	exit
 				
@@ -223,3 +242,4 @@ fi
 # https://serverfault.com/questions/7503/how-to-determine-if-a-bash-variable-is-empty
 # https://github.com/honze-net/dalu/blob/main/example.sh
 # https://github.com/jleclanche/dotfiles/blob/master/install-arch.sh
+# https://stackoverflow.com/questions/34515193/sed-pacman-conf-remove-for-multilib-include
