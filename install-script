@@ -246,7 +246,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		#arch-chroot /mnt systemctl enable ufw
 		#arch-chroot /mnt systemctl start ufw
 		
-		arch-chroot /mnt localectl set-x11-map pt
+		#arch-chroot /mnt localectl set-x11-keymap pt
 		
 		echo
 		echo "Config i3?"
@@ -255,14 +255,16 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		if [[ $REPLY =~ ^[Yy]$ ]]
 		then
 			echo "git clone http://github.com/rtxx/i3-config.git /tmp/i3" >> configi3 
-			echo "cp -rp /tmp/i3/. /mnt/home/$USER_NAME/" >> configi3
-			echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /mnt/etc/lightdm/" >> configi3
-			echo "chmod +x /mnt/home/$USER_NAME/.config/i3/scripts/*" >> configi3
-			echo "rm -rf /mnt/home/$USER_NAME/.git /mnt/home/$USER_NAME/LICENSE /mnt/home/$USER_NAME/README.md /mnt/home/$USER_NAME/breezeblack.kra /mnt/home/$USER_NAME/screenshot.png /mnt/home/$USER_NAME/screenshot2.png /mnt/home/$USER_NAME/vm-lighdm.png" >> configi3
+			echo "cp -rp /tmp/i3/. /home/$USER_NAME/" >> configi3
+			echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /etc/lightdm/" >> configi3
+			echo "chmod +x /home/$USER_NAME/.config/i3/scripts/*" >> configi3
+			echo "rm -rf /home/$USER_NAME/.git /home/$USER_NAME/LICENSE /home/$USER_NAME/README.md /home/$USER_NAME/breezeblack.kra /home/$USER_NAME/screenshot.png /home/$USER_NAME/screenshot2.png /home/$USER_NAME/vm-lighdm.png" >> configi3
 			echo "xdg-user-dirs-update" >> configi3
+			echo "localectl set-x11-keymap pt" >> configi3
+			echo "Please relog to apply settings." >> configi3
 			chmod +x configi3
 			mv configi3 /mnt/home/$USER_NAME/
-			echo "Please run configi3 on 1st login with $USER_NAME account, located on home."
+			echo "Please run sudo configi3 on 1st login with $USER_NAME account, located on home."
 		fi
 	fi
 
