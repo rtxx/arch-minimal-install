@@ -428,7 +428,7 @@ sudo pacman -S breeze breeze-gtk breeze-icons qt5ct lxappearance
 
    Open ```lxappearance``` and change theme and icons.
 
-Xresources - https://github.com/rtxx/linux-config/blob/master/.Xresources . Copy to ```~/.Xresources```
+Xresources - https://github.com/rtxx/i3-config/blob/main/.Xresources . Copy to ```~/.Xresources```
 
 
 #### Install Materia theme - https://github.com/nana-4/materia-theme
