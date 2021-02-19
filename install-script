@@ -2,7 +2,8 @@
 # Simple arch install script
 # REQUIREMENTS
 # 1- Internet connection
-#
+# 2 - git
+
 #set -x # echo on
 export PARTITION_BOOT=/dev/vda1
 export PARTITION_ROOT=/dev/vda3
@@ -241,12 +242,24 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		
 		arch-chroot /mnt systemctl enable lightdm
 		
-		#arch-chroot /mnt ufw enable
+		arch-chroot /mnt ufw enable
 		#arch-chroot /mnt systemctl enable ufw
 		#arch-chroot /mnt systemctl start ufw
 		
+		echo
+		echo "Config i3?"
+		read -p "Continue? " -n 1 -r
+		echo
+		if [[ $REPLY =~ ^[Yy]$ ]]
+		then
+			git clone http://https://github.com/rtxx/i3-config.git /tmp/i3
+			cp -r /tmp/i3/i3-config/ /mnt/home/$USER_NAME/
+			cp -r /tmp/i3/i3-config/lightdm-gtk-greeter.conf /mnt/etc/lightdm/
+			chmod +x /mnt/home/$USER_NAME/.config/i3/scripts/*
+			rm -r -f /mnt/home/$USER_NAME/.git /mnt/home/$USER_NAME/LICENSE /mnt/home/$USER_NAME/README.md /mnt/home/$USER_NAME/breezeblack.kra /mnt/home/$USER_NAME/screenshot.png /mnt/home/$USER_NAME/screenshot2.png /mnt/home/$USER_NAME/vm-lighdm.png
+		fi
 	fi
-	
+
 	read -p "Instalation Done. Please reboot."
 	exit
 				
