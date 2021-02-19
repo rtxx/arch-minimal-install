@@ -246,6 +246,8 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		#arch-chroot /mnt systemctl enable ufw
 		#arch-chroot /mnt systemctl start ufw
 		
+		arch-chroot /mnt localectl set-x11-map pt
+		
 		echo
 		echo "Config i3?"
 		read -p "Continue? " -n 1 -r
