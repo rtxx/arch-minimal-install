@@ -238,7 +238,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /mnt/etc/nanorc
 		echo "set mouse" >> /mnt/etc/nanorc
 
-		echo "QT_QPA_PLATAFORMTHEME=qt5ct" >> /mnt/etc/environment
+		echo "QT_QPA_PLATFORMTHEME=qt5ct" >> /mnt/etc/environment
 		
 		arch-chroot /mnt systemctl enable lightdm
 		
