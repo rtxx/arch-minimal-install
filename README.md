@@ -1,4 +1,7 @@
 # Minimal Arch Install
+## Script 
+The script basically does all this automatatically. Needs the partitions already done. After that installs base and asks for grub, X and i3 installation.
+
 ## General install steps
 1. Connect to the internet
 
