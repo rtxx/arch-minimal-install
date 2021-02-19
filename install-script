@@ -242,7 +242,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		
 		arch-chroot /mnt systemctl enable lightdm
 		
-		arch-chroot /mnt ufw enable
+		#arch-chroot /mnt ufw enable
 		#arch-chroot /mnt systemctl enable ufw
 		#arch-chroot /mnt systemctl start ufw
 		
