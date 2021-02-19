@@ -253,10 +253,10 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		if [[ $REPLY =~ ^[Yy]$ ]]
 		then
 			git clone http://http://github.com/rtxx/i3-config.git /tmp/i3
-			cp -r /tmp/i3/i3-config/ /mnt/home/$USER_NAME/
-			cp -r /tmp/i3/i3-config/lightdm-gtk-greeter.conf /mnt/etc/lightdm/
+			cp -rp /tmp/i3/. /mnt/home/$USER_NAME/
+			cp -r /tmp/i3/lightdm-gtk-greeter.conf /mnt/etc/lightdm/
 			chmod +x /mnt/home/$USER_NAME/.config/i3/scripts/*
-			rm -r -f /mnt/home/$USER_NAME/.git /mnt/home/$USER_NAME/LICENSE /mnt/home/$USER_NAME/README.md /mnt/home/$USER_NAME/breezeblack.kra /mnt/home/$USER_NAME/screenshot.png /mnt/home/$USER_NAME/screenshot2.png /mnt/home/$USER_NAME/vm-lighdm.png
+			rm -rf /mnt/home/$USER_NAME/.git /mnt/home/$USER_NAME/LICENSE /mnt/home/$USER_NAME/README.md /mnt/home/$USER_NAME/breezeblack.kra /mnt/home/$USER_NAME/screenshot.png /mnt/home/$USER_NAME/screenshot2.png /mnt/home/$USER_NAME/vm-lighdm.png
 		fi
 	fi
 
