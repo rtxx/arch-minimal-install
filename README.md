@@ -292,7 +292,7 @@ exec i3
 ```
 sudo pacman -S i3-wm i3status i3lock dmenu ttf-opensans noto-fonts ttf-fantasque-sans-mono xterm htop gvfs
 ```
-Optional: i3 layout based on manjaro i3 - https://github.com/rtxx/linux-config/blob/master/.config/i3/config . Copy to ~/.config/i3.
+Optional: i3 layout based on manjaro i3 - https://github.com/rtxx/i3-config . Copy to ~/.config/i3.
 Warning! If this layout is used, there's a bunch of programs not installed yet.
 
 #### Desktop Environment - xfce - https://wiki.archlinux.org/index.php/Xfce
