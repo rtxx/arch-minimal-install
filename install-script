@@ -255,6 +255,11 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		if [[ $REPLY =~ ^[Yy]$ ]]
 		then
 			echo "git clone http://github.com/rtxx/i3-config.git /tmp/i3" >> configi3 
+			#fix permissions of git files
+			echo "chown -R $USER_NAME:$USER_NAME /tmp/i3" >> configi3
+			echo "find /tmp/i3 -type f -print0 | xargs -0 chmod 664" >> configi3
+			echo "find /tmp/i3 -type d -print0 | xargs -0 chmod 775" >> configi3
+			
 			echo "cp -rp /tmp/i3/. /home/$USER_NAME/" >> configi3
 			echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /etc/lightdm/" >> configi3
 			echo "chmod +x /home/$USER_NAME/.config/i3/scripts/*" >> configi3
