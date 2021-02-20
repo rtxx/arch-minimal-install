@@ -2,7 +2,7 @@
 # Simple arch install script
 # REQUIREMENTS
 # 1- Internet connection
-# 2 - git
+# 2 - git glibc
 
 #set -x # echo on
 export PARTITION_BOOT=/dev/vda1
