@@ -34,7 +34,7 @@ echo "arch minimal script install"
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	lsblk -f
 	echo "Please enter disk:"
-	read -p "Disk to use: " DISK
+	read -p "Disk to use (dev/___): " DISK
 	echo
 	
 	echo "Select partition table type "
