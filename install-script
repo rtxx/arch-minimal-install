@@ -121,6 +121,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			echo "Mounting partitions"
 			mount "${DISK}3" /mnt
 			mkdir /mnt/{boot,home}
+			mkdir /mnt/boot/efi
 			mount "${DISK}1" /mnt/boot/efi
 			swapon "${DISK}2"
 			
@@ -247,7 +248,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		        break
 		        ;;
 		    "UEFI")
-		        arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/mnt/boot --bootloader-id=$GRUB_UEFI_NAME
+		        arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=$GRUB_UEFI_NAME
 		        break
 		        ;;
 		    "Dont install")
