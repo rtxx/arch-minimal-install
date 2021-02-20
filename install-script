@@ -46,24 +46,21 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		echo "Aborting..."
 		exit
 	fi
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 		
 	echo "Mounting partitions"
 	mount $PARTITION_ROOT /mnt
 	mkdir /mnt/{boot,home}
 	mount $PARTITION_BOOT /mnt/boot
 	swapon $PARTITION_SWAP
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# pacstrap new packages
 	echo "Installing packages with pacstrap"
 	pacstrap /mnt $PACSTRAP_PKG_LIST_BASE
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 		
-	echo "Microde to install:"
+	echo "CPU microde installation"
 	options=("Intel" "AMD" "Dont install" "Abort")
 	select opt in "${options[@]}"
 	do
@@ -80,86 +77,74 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		        break
 		        ;;
 		    "Abort")
-		   		echo "Aborting..."
+			echo "Aborting..."
 		        exit
 		        ;;
 		    *) echo "invalid option $REPLY";;
 		esac
 	done
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# fstab gen
 	echo "Generating fstab"
 	genfstab -U /mnt >> /mnt/etc/fstab
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 		
 	# chroot into the new system
 	#echo "chroot into the new system"
 	#arch-chroot /mnt
-	#read -p "Press Enter to continue."
-	#echo ""
+	#echo
 	
 	# setting timezone
 	echo "Setting Timezone"
 	arch-chroot /mnt timedatectl set-timezone Europe/Lisbon
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# generate /etc/adjtime
 	echo "Generate /etc/adjtime"
 	arch-chroot /mnt hwclock --systohc
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 		
 	# select locale
 	echo "Select/Uncomment locale $LOCALE"
 	#nano /etc/locale.gen
 	arch-chroot /mnt sed -i "s/#$LOCALE/$LOCALE/" /etc/locale.gen
 	arch-chroot /mnt locale-gen
-	#read -p "Press Enter to continue."
-	#echo ""
+	#echo
 	
 	# create locale.conf
 	echo "Creating locale.conf"
 	#arch-chroot /mnt echo "LANG=$LOCALE" >> /etc/locale.conf
 	echo "LANG=$LOCALE" >> /mnt/etc/locale.conf
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# setting keyboard layout 
 	echo "Setting keyboard layout"
 	#arch-chroot /mnt echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf
 	echo "KEYMAP=$KEYMAP" >> /mnt/etc/vconsole.conf
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# setting hostname 
 	echo "Setting host name"
 	#arch-chroot /mnt echo "$HOST_NAME" >> /etc/hostname
 	echo "$HOST_NAME" >> /mnt/etc/hostname
-	#read -p "Press Enter to continue."	
-	echo ""
+	echo
 	
 	# setting hosts file 
 	echo "Setting hosts file"
 	#arch-chroot /mnt echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /etc/hosts
 	echo -e "127.0.0.1	localhost\n::1	localhost\n127.0.1.1	$HOST_NAME.localdomain	$HOST_NAME" >> /mnt/etc/hosts
-	#read -p "Press Enter to continue."
-	#echo ""
+	#echo
 	
 	# enable networkmanager service 
 	echo "Enable networkmanager service"
 	arch-chroot /mnt systemctl enable NetworkManager.service
-	#read -p "Press Enter to continue."		
-	echo ""		
+	echo	
 	
 	# recreate initramfs 
 	echo "Recreate initramfs"
 	arch-chroot /mnt mkinitcpio -P
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	echo "GRUB Install:"
 	options=("MBR" "UEFI" "Dont install" "Abort")
@@ -178,31 +163,28 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		        break
 		        ;;
 		    "Abort")
-		   		echo "Aborting..."
+			echo "Aborting..."
 		        exit
 		        ;;
 		    *) echo "invalid option $REPLY";;
 		esac
 	done
-	#read -p "Press Enter to continue."	
-	echo ""
+	echo
 	
 	# generate main config file for grub
 	echo "Generate main config file for grub"
 	arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# set root password
 	echo "Set root password"
 	arch-chroot /mnt passwd
-	#read -p "Press Enter to continue."
-	echo ""
+	echo
 	
 	# config visudo
 	echo "Config Visudo"
 	arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
-	echo ""
+	echo
 	
 	# Create a new user and add it to the wheel group and force user to change password at next login.
 	echo "Creating $USER_NAME profile "
@@ -210,15 +192,15 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo "Please enter $USER_NAME password "
 	arch-chroot /mnt passwd $USER_NAME
 	#arch-chroot /mnt passwd -e $USER_NAME
-	echo ""
+	echo
 	
 	# Basic pacman configuration
 	echo "pacman configuration "
 	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
 	arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
-	echo ""
+	echo
 	
-	echo "Install X Server and i3?"
+	echo "Install X Server?"
 	read -p "Continue? " -n 1 -r
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]
@@ -227,50 +209,36 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		echo "X Install"
 		pacstrap /mnt $PACSTRAP_PKG_LIST_X
 		
-		# Intel drivers
-		pacstrap /mnt xf86-video-intel mesa lib32-mesa
-		
-		echo "i3 install"
-		pacstrap /mnt $PACSTRAP_PKG_LIST_I3
-		arch-chroot /mnt xdg-user-dirs-update
-		
-		echo "TERMINAL=xterm" >> /mnt/etc/environment
-		echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /mnt/etc/nanorc
-		echo "set mouse" >> /mnt/etc/nanorc
-
-		echo "QT_QPA_PLATFORMTHEME=qt5ct" >> /mnt/etc/environment
-		
-		arch-chroot /mnt systemctl enable lightdm
-		
-		#arch-chroot /mnt ufw enable
-		#arch-chroot /mnt systemctl enable ufw
-		#arch-chroot /mnt systemctl start ufw
-		
-		#arch-chroot /mnt localectl set-x11-keymap pt
-		
-		echo
-		echo "Config i3?"
-		read -p "Continue? " -n 1 -r
-		echo
-		if [[ $REPLY =~ ^[Yy]$ ]]
-		then
-			echo "git clone http://github.com/rtxx/i3-config.git /tmp/i3" >> configi3 
-			#fix permissions of git files
-			echo "chown -R $USER_NAME:$USER_NAME /tmp/i3" >> configi3
-			echo "find /tmp/i3 -type f -print0 | xargs -0 chmod 664" >> configi3
-			echo "find /tmp/i3 -type d -print0 | xargs -0 chmod 775" >> configi3
-			
-			echo "cp -rp /tmp/i3/. /home/$USER_NAME/" >> configi3
-			echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /etc/lightdm/" >> configi3
-			echo "chmod +x /home/$USER_NAME/.config/i3/scripts/*" >> configi3
-			echo "rm -rf /home/$USER_NAME/.git /home/$USER_NAME/LICENSE /home/$USER_NAME/README.md /home/$USER_NAME/breezeblack.kra /home/$USER_NAME/screenshot.png /home/$USER_NAME/screenshot2.png /home/$USER_NAME/vm-lighdm.png" >> configi3
-			echo "xdg-user-dirs-update" >> configi3
-			echo "localectl set-x11-keymap pt" >> configi3
-			echo "Please relog to apply settings." >> configi3
-			chmod +x configi3
-			mv configi3 /mnt/home/$USER_NAME/
-			echo "Please run sudo configi3 on 1st login with $USER_NAME account, located on home."
-		fi
+		# graphics drivers 
+		echo "Graphic Drivers Installation"
+		options=("Intel" "AMD" "NVIDIA" "Dont install" "Abort")
+		select opt in "${options[@]}"
+		do
+			case $opt in
+			    "Intel")
+				pacstrap /mnt xf86-video-intel mesa lib32-mesa
+				break
+				;;
+			    "AMD")
+				pacstrap /mnt xf86-video-amdgpu mesa lib32-mesa
+				break
+				;;
+			    "NVIDIA")
+				pacstrap /mnt nvidia nvidia-utils lib32-nvidia-utils mesa lib32-mesa
+				break
+				;;
+			    "Dont install")
+				break
+				;;
+			    "Abort")
+				echo "Aborting..."
+				exit
+				;;
+			    *) echo "invalid option $REPLY";;
+			esac
+		done	
+		echo		
+	
 	fi
 
 	read -p "Instalation Done. Please reboot."
