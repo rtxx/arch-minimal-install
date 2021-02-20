@@ -25,11 +25,11 @@ PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-
 
 echo "arch minimal script install"
 
-if [ -z "${PARTITION_BOOT}" ] || [ -z "${PARTITION_ROOT}" ] || [ -z "${PARTITION_SWAP}" ] ||  [ -z "${GRUB_MBR_LOCATION}" ] || [ -z "${GRUB_UEFI_NAME}" ];
-then
-echo "Please config script first."
-exit
-fi
+#if [ -z "${PARTITION_BOOT}" ] || [ -z "${PARTITION_ROOT}" ] || [ -z "${PARTITION_SWAP}" ] ||  [ -z "${GRUB_MBR_LOCATION}" ] || [ -z "${GRUB_UEFI_NAME}" ];
+#then
+#echo "Please config script first."
+#exit
+#fi
 
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	lsblk -f
