@@ -211,6 +211,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		
 		# graphics drivers 
 		echo "Graphic Drivers Installation"
+		echo "Warning! Here be dragons! Very little testing was done!"
 		options=("Intel" "AMD" "NVIDIA" "Dont install" "Abort")
 		select opt in "${options[@]}"
 		do
@@ -225,6 +226,10 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 				;;
 			    "NVIDIA")
 				pacstrap /mnt nvidia nvidia-utils lib32-nvidia-utils mesa lib32-mesa
+				break
+				;;
+			    "Nouveau NVIDIA")
+				pacstrap /mnt xf86-video-nouveau mesa lib32-mesa
 				break
 				;;
 			    "Dont install")
