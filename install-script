@@ -6,10 +6,10 @@
 
 #set -x # echo on
 #export DISK=/dev/vda
-export PARTITION_BOOT=/dev/vda1
-export PARTITION_ROOT=/dev/vda3
-export PARTITION_SWAP=/dev/vda2
-export GRUB_MBR_LOCATION=/dev/vda
+#export PARTITION_BOOT=/dev/vda1
+#export PARTITION_ROOT=/dev/vda3
+#export PARTITION_SWAP=/dev/vda2
+#export GRUB_MBR_LOCATION=/dev/vda
 
 export GRUB_UEFI_NAME=archlinux
 
@@ -32,6 +32,7 @@ exit
 fi
 
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
+	lsblk -f
 	echo "Please enter disk:"
 	read -p "Disk to use: " DISK
 	echo
@@ -44,7 +45,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		    "MBR - Auto Install")
 		    	echo "MBR - Auto Installation"
 			echo "* * * Beware all partitions will be primary! * * *"
-			echo "Partition Scheme:"
+			echo "Partition table:"
 			echo " ${DISK}1 - /boot with 512MB"
 			echo " ${DISK}2 - /swap with 4GB"
 			echo " ${DISK}3 - /root with the remaining space"
@@ -81,13 +82,14 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			mount "${DISK}1" /mnt/boot
 			swapon "${DISK}2"
 			
+			export $PARTITION_TABLE_TYPE="MBR"
+			
 		        break
 		        ;;
 		    "UEFI")
 		        break
 		        ;;
-		    "MBR - Manual Install")
-		    		
+		    "MBR - Manual Install")    		
 		        break
 		        ;;
 		    "Abort")
@@ -100,7 +102,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	#test
-	exit
+	#exit
 	# add multilib for liveiso
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	
@@ -196,12 +198,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	echo "GRUB Install:"
+	echo "Reminder: Partition table type is * * * $PARTITION_TABLE_TYPE * * *"
 	options=("MBR" "UEFI" "Dont install" "Abort")
 	select opt in "${options[@]}"
 	do
 		case $opt in
 		    "MBR")
-		        arch-chroot /mnt grub-install --target=i386-pc $GRUB_MBR_LOCATION
+		        arch-chroot /mnt grub-install --target=i386-pc $DISK
 		        break
 		        ;;
 		    "UEFI")
