@@ -5,6 +5,7 @@
 # 2 - git glibc
 
 #set -x # echo on
+#export DISK=/dev/vda
 export PARTITION_BOOT=/dev/vda1
 export PARTITION_ROOT=/dev/vda3
 export PARTITION_SWAP=/dev/vda2
@@ -32,7 +33,7 @@ fi
 
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo "Please enter disk:"
-	read -p "Disk to use: " -n 1 -r
+	read -p "Disk to use: " DISK
 	echo
 	
 	echo "Select partition table type "
@@ -42,12 +43,12 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		case $opt in
 		    "MBR - Auto Install")
 		    	echo "MBR - Auto Installation"
-			echo "Beware all partitions will be primary!"
-			echo "it will create:"
-			echo " /boot with 512MB "
-			echo " /swapt with 4GB "
-			echo " /root with the remaining "
-			echo "Continue?"
+			echo "* * * Beware all partitions will be primary! * * *"
+			echo "Partition Scheme:"
+			echo " ${DISK}1 - /boot with 512MB"
+			echo " ${DISK}2 - /swap with 4GB"
+			echo " ${DISK}3 - /root with the remaining space"
+			read -p "Press enter to continue. Ctrl+C to cancel."
 			(
 			echo o # Create a new empty DOS partition table
 			echo n # Add /boot partition
@@ -68,11 +69,12 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			echo w # Write changes
 			) | fdisk $DISK
 			
-			# formating +artitions
+			# formating partitions
 			mkfs.ext4 "${DISK}1"
 			mkswap "${DISK}2"
 			mkfs.ext4 "${DISK}3"
 			
+			# mounting partitions
 			echo "Mounting partitions"
 			mount "${DISK}3" /mnt
 			mkdir /mnt/{boot,home}
