@@ -5,12 +5,9 @@
 # 2 - git glibc
 
 #set -x # echo on
-#export DISK=/dev/vda
-#export PARTITION_BOOT=/dev/vda1
-#export PARTITION_ROOT=/dev/vda3
-#export PARTITION_SWAP=/dev/vda2
-#export GRUB_MBR_LOCATION=/dev/vda
 
+export BOOT_SIZE=512MB
+export SWAP_SIZE=2GB
 export GRUB_UEFI_NAME=archlinux
 
 export HOST_NAME=archx64
@@ -25,30 +22,24 @@ PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-
 
 echo "arch minimal script install"
 
-#if [ -z "${PARTITION_BOOT}" ] || [ -z "${PARTITION_ROOT}" ] || [ -z "${PARTITION_SWAP}" ] ||  [ -z "${GRUB_MBR_LOCATION}" ] || [ -z "${GRUB_UEFI_NAME}" ];
-#then
-#echo "Please config script first."
-#exit
-#fi
-
 if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	lsblk -f
 	echo "Please enter disk:"
-	read -p "Disk to use (dev/___): " DISK
+	read -p "Disk to use (/dev/___): " DISK
 	echo
 	
-	echo "Select partition table type "
+	echo "Select partition table type"
 	echo "MBR and GPT auto install will use all disk and format everything, careful! "
-	options=("MBR - Auto Install" "GPT - Auto Install" "MBR" "GPT" "Abort")
+	options=("MBR - Auto Install" "GPT - Auto Install" "Manual" "Abort")
 	select opt in "${options[@]}"
 	do
 		case $opt in
 		    "MBR - Auto Install")
 		    	echo "MBR - Auto Installation"
-			echo "* * * Beware all partitions will be primary! * * *"
+			echo "* * * Beware! All partitions will be primary! * * *"
 			echo "Partition table:"
-			echo " ${DISK}1 - /boot with 512MB"
-			echo " ${DISK}2 - /swap with 4GB"
+			echo " ${DISK}1 - /boot with ${BOOT_SIZE}"
+			echo " ${DISK}2 - /swap with ${SWAP_SIZE}"
 			echo " ${DISK}3 - /root with the remaining space"
 			read -p "Press enter to continue. Ctrl+C to cancel."
 			(
@@ -57,12 +48,12 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			echo p # Primary partition
 			echo 1 # Partition number
 			echo   # First sector default
-			echo +512MB  # Size
+			echo +$BOOT_SIZE  # Size
 			echo n # Add /swap partition
 			echo p # Primary partition
 			echo 2 # Partition number
 			echo   # First sector default
-			echo +4GB  # Size
+			echo +$SWAP_SIZE  # Size
 			echo n # Add /root partition
 			echo p # Primary partition
 			echo 3 # Partition number
@@ -89,9 +80,10 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		        ;;
 		    "GPT - Auto Install")
 			echo "GPT - Auto Installation"
+			echo "* * * Beware! This will only work with UEFI boot! * * *"			
 			echo "Partition table:"
-			echo " ${DISK}1 - /boot with 512MB"
-			echo " ${DISK}2 - /swap with 4GB"
+			echo " ${DISK}1 - /boot with ${BOOT_SIZE}"
+			echo " ${DISK}2 - /swap with ${SWAP_SIZE}"
 			echo " ${DISK}3 - /root with the remaining space"
 			read -p "Press enter to continue. Ctrl+C to cancel."
 			(
@@ -99,11 +91,11 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			echo n # Add /boot partition
 			echo 1 # Partition number
 			echo   # First sector default
-			echo +512MB  # Size
+			echo +$BOOT_SIZE  # Size
 			echo n # Add /swap partition
 			echo 2 # Partition number
 			echo   # First sector default
-			echo +4GB  # Size
+			echo +$SWAP_SIZE  # Size
 			echo n # Add /root partition
 			echo 3 # Partition number
 			echo   # First sector default
@@ -129,7 +121,48 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			
 		        break
 		        ;;
-		    "MBR - Manual Install")    		
+		    "Manual")
+		    	echo "BEWARE HERE BE MANY MANY DRAGONS"
+			echo "Please format if needed and then use this, this will ONLY MOUNT partitions!"
+			echo "Open this script and remove this part! REMOVE WHAT IS NOT NEEDED"
+			exit
+			#MBR
+			#USE THIS FOR if /home is on the /root partition
+			#MOUNT PARTITION FOR /ROOT
+			echo "Mounting partitions"
+			mount /dev/my-root-partition /mnt 
+			mkdir /mnt/{boot,home}
+			mount /dev/my-boot-partition /mnt/boot
+			swapon /dev/my-swap-partition
+			
+			#USE THIS FOR if /home is on a separated partition
+			#MOUNT PARTITION FOR /ROOT
+			echo "Mounting partitions"
+			mount /dev/my-root-partition /mnt #root
+			mkdir /mnt/{boot,home}
+			mount /dev/my-boot-partition /mnt/boot
+			mount /dev/my-home-partition /mnt/home
+			swapon /dev/my-swap-partition
+			
+			#GPT
+			#USE THIS FOR if /home is on the /root partition
+			#MOUNT PARTITION FOR /ROOT
+			echo "Mounting partitions"
+			mount /dev/my-root-partition /mnt 
+			mkdir /mnt/{boot,home}
+			mkdir /mnt/boot/efi
+			mount /dev/my-boot-partition /mnt/boot/efi
+			swapon /dev/my-swap-partition
+			
+			#USE THIS FOR if /home is on a separated partition
+			#MOUNT PARTITION FOR /ROOT
+			echo "Mounting partitions"
+			mount /dev/my-root-partition /mnt #root
+			mkdir /mnt/{boot,home}
+			mkdir /mnt/boot/efi
+			mount /dev/my-boot-partition /mnt/boot/efi
+			mount /dev/my-home-partition /mnt/home
+			swapon /dev/my-swap-partition			
 		        break
 		        ;;
 		    "Abort")
@@ -141,8 +174,6 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	done
 	echo
 	
-	#test
-	#exit
 	# add multilib for liveiso
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	
@@ -238,7 +269,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	echo "GRUB Install:"
-	echo "Reminder: Partition table type is $PARTITION_TABLE_TYPE"
+	echo "Reminder: Partition table type is ${PARTITION_TABLE_TYPE}"
 	options=("MBR" "UEFI" "Dont install" "Abort")
 	select opt in "${options[@]}"
 	do
