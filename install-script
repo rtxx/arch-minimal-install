@@ -95,9 +95,10 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		    *) echo "invalid option $REPLY";;
 		esac
 	done
-	echo	
+	echo
 	
-	
+	#test
+	exit
 	# add multilib for liveiso
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 	
