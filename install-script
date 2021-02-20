@@ -38,7 +38,8 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	echo "Select partition table type "
-	options=("MBR - Auto Install" "GPT" "Abort")
+	echo "MBR and GPT auto install will use all disk and format everything, careful! "
+	options=("MBR - Auto Install" "GPT - Auto Install" "MBR" "GPT" "Abort")
 	select opt in "${options[@]}"
 	do
 		case $opt in
@@ -86,7 +87,45 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			
 		        break
 		        ;;
-		    "UEFI")
+		    "GPT - Auto Install")
+			echo "GPT - Auto Installation"
+			echo "Partition table:"
+			echo " ${DISK}1 - /boot with 512MB"
+			echo " ${DISK}2 - /swap with 4GB"
+			echo " ${DISK}3 - /root with the remaining space"
+			read -p "Press enter to continue. Ctrl+C to cancel."
+			(
+			echo g # Create a new empty GPT partition table
+			echo n # Add /boot partition
+			echo 1 # Partition number
+			echo   # First sector default
+			echo +512MB  # Size
+			echo n # Add /swap partition
+			echo 2 # Partition number
+			echo   # First sector default
+			echo +4GB  # Size
+			echo n # Add /root partition
+			echo 3 # Partition number
+			echo   # First sector default
+			echo   # Size remaining
+			echo w # Write changes
+			) | fdisk $DISK
+			
+			# formating partitions
+			pacman -S dosfstools --noconfirm
+			mkfs.fat -F32 "${DISK}1"
+			mkswap "${DISK}2"
+			mkfs.ext4 "${DISK}3"
+			
+			# mounting partitions
+			echo "Mounting partitions"
+			mount "${DISK}3" /mnt
+			mkdir /mnt/{boot,home}
+			mount "${DISK}1" /mnt/boot/efi
+			swapon "${DISK}2"
+			
+			export $PARTITION_TABLE_TYPE="GPT"
+			
 		        break
 		        ;;
 		    "MBR - Manual Install")    		
@@ -198,7 +237,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	echo "GRUB Install:"
-	echo "Reminder: Partition table type is * * * $PARTITION_TABLE_TYPE * * *"
+	echo "Reminder: Partition table type is $PARTITION_TABLE_TYPE"
 	options=("MBR" "UEFI" "Dont install" "Abort")
 	select opt in "${options[@]}"
 	do
