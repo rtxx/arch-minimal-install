@@ -55,6 +55,9 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	swapon $PARTITION_SWAP
 	echo
 	
+	# add multilib for liveiso
+	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+	
 	# pacstrap new packages
 	echo "Installing packages with pacstrap"
 	pacstrap /mnt $PACSTRAP_PKG_LIST_BASE
