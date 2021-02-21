@@ -337,7 +337,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		# graphics drivers 
 		echo "Graphic Drivers Installation"
 		echo "Warning! Here be dragons! Very little testing was done!"
-		options=("Intel" "AMD" "NVIDIA" "Dont install" "Abort")
+		options=("Intel" "AMD" "NVIDIA" "Nouveau NVIDIA" "Dont install" "Abort")
 		select opt in "${options[@]}"
 		do
 			case $opt in
