@@ -374,7 +374,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		do
 			case $opt in
 			    "GNOME")
-				pacstrap /mnt gnome
+				pacstrap /mnt gnome gdm
 				arch-chroot /mnt systemctl enable gdm
 				break
 				;;
