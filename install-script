@@ -74,7 +74,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			mount "${DISK}1" /mnt/boot
 			swapon "${DISK}2"
 			
-			export $PARTITION_TABLE_TYPE="MBR"
+			export PARTITION_TABLE_TYPE="MBR"
 			
 		        break
 		        ;;
@@ -117,7 +117,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 			mount "${DISK}1" /mnt/boot/efi
 			swapon "${DISK}2"
 			
-			export $PARTITION_TABLE_TYPE="GPT"
+			export PARTITION_TABLE_TYPE="GPT"
 			
 		        break
 		        ;;
@@ -268,8 +268,9 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	arch-chroot /mnt mkinitcpio -P
 	echo
 	
+	#TODO: AUTOMATE THIS
 	echo "GRUB Install:"
-	echo "Reminder: Partition table type is ${PARTITION_TABLE_TYPE}"
+	echo "Reminder: Partition table type is * * * ${PARTITION_TABLE_TYPE} * * *"
 	options=("MBR" "UEFI" "Dont install" "Abort")
 	select opt in "${options[@]}"
 	do
@@ -309,12 +310,13 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
 	echo
 	
-	# Create a new user and add it to the wheel group and force user to change password at next login.
+	# Create a new user and add it to the wheel group.
 	echo "Creating $USER_NAME profile "
 	arch-chroot /mnt useradd -m -G wheel $USER_NAME
+	
+	# creates a new password for new user
 	echo "Please enter $USER_NAME password "
 	arch-chroot /mnt passwd $USER_NAME
-	#arch-chroot /mnt passwd -e $USER_NAME
 	echo
 	
 	# Basic pacman configuration
@@ -324,7 +326,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 	echo
 	
 	echo "Install X Server?"
-	read -p "Continue? " -n 1 -r
+	read -p "Continue? [Y/y] to continue, anything else cancel." -n 1 -r
 	echo
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
