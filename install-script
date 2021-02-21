@@ -369,7 +369,7 @@ if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
 		#DE Installation
 		echo "Desktop Environment Installation"
 		echo "Warning! Here be dragons! Very little testing was done!"
-		options=("GNOME" "KDE" "XFCE" "i3" "i3 - My Configs" "Dont install" "Abort")
+		options=("GNOME" "KDE" "XFCE" "i3" "i3gaps - My Configs" "Dont install" "Abort")
 		select opt in "${options[@]}"
 		do
 			case $opt in
