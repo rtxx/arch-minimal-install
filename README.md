@@ -1,6 +1,6 @@
 # Minimal Arch Install
 ## Script 
-The script basically does all this automatically. Needs the partitions already done. After that, change the script for the partitions that Arch will use. It installs base and asks for grub, X and i3 installation. Please open and change the script before the 1st run, it can wipe your data, beware!
+The script basically does all this automatically. Please open and read the script before the 1st run, it can wipe your data, beware!
 
 ## General install steps
 1. Connect to the internet
