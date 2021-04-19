@@ -18,7 +18,7 @@ export USER_NAME=vuser
 
 PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
 PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
-PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-fantasque-sans-mono xterm htop nethogs arandr volumeicon dunst feh picom udiskie unclutter xorg-xinput xfce4-power-manager tlp cpupower polkit polkit-gnome polkit-qt5 networkmanager breeze breeze-gtk qt5ct lxappearance capitaine-cursors arc-icon-theme archlinux-wallpaper thunar mousepad firefox neofetch scrot xdg-user-dirs lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings git gvfs powertop pulseaudio pulseaudio-alsa alsa-utils pavucontrol  ufw gufw gnome-keyring seahorse nano-syntax-highlighting"
+PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-fantasque-sans-mono xterm htop nethogs arandr volumeicon dunst feh picom udiskie unclutter xorg-xinput xfce4-power-manager tlp cpupower polkit polkit-gnome polkit-qt5 networkmanager breeze breeze-gtk qt5ct lxappearance capitaine-cursors arc-icon-theme archlinux-wallpaper thunar tumbler ffmpegthumbnailer thunar-archive-plugin thunar-media-tags-plugin mousepad firefox neofetch scrot xdg-user-dirs lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings git gvfs gvfs-smb gvfs-mtp powertop pulseaudio pulseaudio-alsa alsa-utils pavucontrol ufw gufw gnome-keyring seahorse nano-syntax-highlighting xarchiver unrar"
 
 echo "arch minimal script install"
 
