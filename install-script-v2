@@ -693,7 +693,7 @@ install-ok() {
 	# creates a new password for new user
   	echo "$USER_NAME:$USER_NAME_PASSWORD" | arch-chroot /mnt chpasswd
 	echo
-	read -p "Press enter to continue..."
+
 	# Basic pacman configuration
 	echo "Pacman configuration and enabling multilib repo"
 	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
