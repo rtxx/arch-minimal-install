@@ -679,9 +679,9 @@ install-ok() {
 
 	# set root password
 	echo "Set root password"
-  "root:$ROOT_PASSWORD" | arch-chroot /mnt chpasswd
+ 	"root:$ROOT_PASSWORD" | arch-chroot /mnt chpasswd
 	echo
-	
+	read -p "Press enter to continue..."
 	# config visudo
 	echo "Visudo configuration"
 	arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
@@ -692,9 +692,9 @@ install-ok() {
 	arch-chroot /mnt useradd -m -G wheel $USER_NAME
 	
 	# creates a new password for new user
-  "$USER_NAME:$USER_NAME_PASSWORD" | arch-chroot /mnt chpasswd
+  	"$USER_NAME:$USER_NAME_PASSWORD" | arch-chroot /mnt chpasswd
 	echo
-	
+	read -p "Press enter to continue..."
 	# Basic pacman configuration
 	echo "Pacman configuration and enabling multilib repo"
 	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
