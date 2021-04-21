@@ -154,14 +154,14 @@ packagesmenu-base() {
   echo "packagesmenu-base"
 
   while true; do
-      echo Base packages to install: $PACSTRAP_PKG_LIST_BASE
-      read -p "Do you wish to install? (y/n) " yn
-      echo
-      case $yn in
-        [Yy]* ) INSTALL_PKG_LIST_BASE=TRUE; break;;
-        [Nn]* ) INSTALL_PKG_LIST_BASE=FALSE; break;;
-        * ) echo "Please use yes or no.";;
-      esac
+    echo Base packages to install: $PACSTRAP_PKG_LIST_BASE
+    read -p "Do you wish to install? (y/n) " yn
+    echo
+    case $yn in
+      [Yy]* ) INSTALL_PKG_LIST_BASE=TRUE; break;;
+      [Nn]* ) INSTALL_PKG_LIST_BASE=FALSE; break;;
+      * ) echo "Please use yes or no.";;
+    esac
   done
 
   if [[ "$INSTALL_PKG_LIST_BASE" == "FALSE" ]]; then
@@ -173,14 +173,14 @@ packagesmenu-base() {
   fi
   echo
   while true; do
-      echo Extras packages to install: $PACSTRAP_PKG_LIST_EXTRAS
-      read -p "Do you wish to install? (y/n) " yn
-      echo
-      case $yn in
-        [Yy]* ) INSTALL_PKG_LIST_EXTRAS=TRUE; break;;
-        [Nn]* ) INSTALL_PKG_LIST_EXTRAS=FALSE; break;;
-        * ) echo "Please use yes or no.";;
-      esac
+    echo Extras packages to install: $PACSTRAP_PKG_LIST_EXTRAS
+    read -p "Do you wish to install? (y/n) " yn
+    echo
+    case $yn in
+      [Yy]* ) INSTALL_PKG_LIST_EXTRAS=TRUE; break;;
+      [Nn]* ) INSTALL_PKG_LIST_EXTRAS=FALSE; break;;
+      * ) echo "Please use yes or no.";;
+    esac
   done
 
   if [[ "$INSTALL_PKG_LIST_EXTRAS" == "FALSE" ]]; then
@@ -211,14 +211,14 @@ packagesmenu-x() {
   echo "packagesmenu-x"
 
   while true; do
-      echo X packages to install: $PACSTRAP_PKG_LIST_X
-      read -p "Do you wish to install? (y/n) " yn
-      echo
-      case $yn in
-        [Yy]* ) INSTALL_PKG_LIST_X=TRUE; break;;
-        [Nn]* ) INSTALL_PKG_LIST_X=FALSE; break;;
-        * ) echo "Please use yes or no.";;
-      esac
+    echo X packages to install: $PACSTRAP_PKG_LIST_X
+    read -p "Do you wish to install? (y/n) " yn
+    echo
+    case $yn in
+      [Yy]* ) INSTALL_PKG_LIST_X=TRUE; break;;
+      [Nn]* ) INSTALL_PKG_LIST_X=FALSE; break;;
+      * ) echo "Please use yes or no.";;
+    esac
   done
 
   if [[ "$INSTALL_PKG_LIST_X" == "FALSE" ]]; then
