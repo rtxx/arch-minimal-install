@@ -1,6 +1,11 @@
 #!/bin/bash
 # simple arch installer
 
+if [ "$EUID" -ne 0 ]
+    then echo "Please run as root"
+exit
+fi
+
 ################ DEFAULT VALUES ################
 export BOOT_SIZE=512MB
 export SWAP_SIZE=2GB
