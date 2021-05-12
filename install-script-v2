@@ -780,6 +780,14 @@ install-ok() {
 
     # sets x keyboard layout
     echo "localectl set-x11-keymap pt" >> configi3
+    
+	  # sets nanorc
+    echo "echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /etc/nanorc" >> configi3
+    echo "echo "set mouse" >> /etc/nanorc" >> configi3
+    echo "echo "set autoindent" >> /etc/nanorc" >> configi3
+    echo "echo "set tabsize 4" >> /etc/nanorc" >> configi3
+    echo "echo "set tabstospaces" >> /etc/nanorc" >> configi3
+    
     echo "echo Please relog to apply settings." >> configi3
 
     # permission to execute
