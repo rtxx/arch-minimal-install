@@ -590,6 +590,7 @@ install-ok() {
 
 	# add multilib for liveiso
 	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+	pacman -Sy
   echo
 
 	# pacstrap new packages
