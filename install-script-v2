@@ -20,7 +20,7 @@ export ROOT_PASSWORD=root
 
 # base packages
 export INSTALL_PKG_LIST_BASE=TRUE
-PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
+PACSTRAP_PKG_LIST_BASE="base base-devel linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion man"
 
 export INSTALL_PKG_LIST_EXTRAS=FALSE
 PACSTRAP_PKG_LIST_EXTRAS="firefox"
