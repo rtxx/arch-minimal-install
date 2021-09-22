@@ -776,6 +776,7 @@ install-ok() {
     # copy dot files
     echo "cp -rp /tmp/i3/. /home/$USER_NAME/" >> configi3
     echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /etc/lightdm/" >> configi3
+    echo "cp -r /tmp/i3/nanorc /etc/nanorc" >> configi3
     echo "chmod +x /home/$USER_NAME/.config/i3/scripts/*" >> configi3
 
     # deletes unwanted files
