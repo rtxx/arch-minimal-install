@@ -618,7 +618,7 @@ install-ok() {
 
 	# fstab gen
 	echo "Generating fstab"
-	echo genfstab -U /mnt >> /mnt/etc/fstab
+	genfstab -U /mnt >> /mnt/etc/fstab
 	echo
 
 	# setting timezone
