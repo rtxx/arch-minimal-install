@@ -663,7 +663,14 @@ installOK() {
   # enable services on the profile
   enableServices
 
+  # TODO: fix permissions after copying
   cp -rf /etc/skel/. /mnt/home/$ui_username/
+
+  # fix files permissions
+  chown -R $ui_username:$ui_username /mnt/home/$ui_username/
+  find /mnt/home/$ui_username/ -type f -print0 | xargs -0 chmod 664
+  find /mnt/home/$ui_username/ -type d -print0 | xargs -0 chmod 775
+
   cp -f /etc/lightdm/* /mnt/etc/lightdm
 
   read -p "Install done!. Press enter to continue..."
