@@ -531,7 +531,7 @@ installOK() {
 
   # setting timezone
   printf "Setting Timezone\n"
-  arch-chroot /mnt timedatectl set-timezone $TIMEZONE
+  arch-chroot /mnt timedatectl set-timezone $si_timezone
   printf "\n"
 
   # generate /etc/adjtime
