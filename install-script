@@ -255,7 +255,7 @@ loadProfile() {
   # pkg = packages
   local pkg_baseArray=$( echo $profileJSON | jq --raw-output '.["basepkgs"][]' )
   for pkg in ${pkg_baseArray[@]}; do
-    pkg_base=("${pkg_base[@]}" "$pkg")
+    #pkg_base=("${pkg_base[@]}" "$pkg")
     pkg_list=("${pkg_list[@]}" "$pkg")
   done
 
@@ -276,6 +276,13 @@ loadProfile() {
     #pkg_basePlus=("${pkg_basePlus[@]}" "$pkg")
     pkg_list=("${pkg_list[@]}" "$pkg")
   done
+
+  # services to be enabled
+  local pkg_servicesArray=$( echo $profileJSON | jq --raw-output '.["systemdservices"][]' )
+  for srv in ${pkg_servicesArray[@]}; do
+    pkg_services=("${pkg_services[@]}" "$srv")
+  done
+
 
   read -p "Profile selected: '$(basename ${profile})'"
   logMe 0 "Profile used: '$(basename ${profile})'"
@@ -338,6 +345,12 @@ review() {
 #     printf "%-${c1}s %-${c2}s\n" "[$i]" "${pkg}"
 #   done
   printf "\n"
+
+
+  for srv in ${pkg_services[@]}; do
+    echo "arch-chroot /mnt systemctl enable ${srv}"
+  done
+
 
   read -p "Press enter to continue..."
 
@@ -451,11 +464,20 @@ install() {
     read -p "Install arch with the above configuration? (y/n) " yn
     printf "\n"
     case $yn in
-      [Yy]* ) installOK ;;
+      [Yy]* ) installOK ; break ;;
       [Nn]* ) break ;;
       * ) printf "Please use [y]es or [n]o\n";;
     esac
   done
+}
+
+enableServices() {
+
+ # TODO: check if array is empty
+  for srv in ${pkg_services[@]}; do
+    arch-chroot /mnt systemctl enable ${srv}
+  done
+
 }
 
 installOK() {
@@ -620,7 +642,8 @@ installOK() {
   #TODO: not working, user still not on wheel group
   # config visudo
   printf "Visudo configuration\n"
-  arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+  #arch-chroot /mnt sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+  arch-chroot /mnt sed --in-place '/# %wheel ALL=(ALL) ALL/c%wheel ALL=(ALL) ALL' /etc/sudoers
   printf "\n"
 
   # Create a new user and add it to the wheel group.
@@ -636,6 +659,12 @@ installOK() {
   arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
   arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
   printf "\n"
+
+  # enable services on the profile
+  enableServices
+
+  cp -f /etc/skel/* /mnt/home/$ui_username/
+  cp -f /etc/lightdm/* /mnt/etc/lightdm
 
   read -p "Install done!. Press enter to continue..."
 }
@@ -680,8 +709,8 @@ main() {
   export ui_rootpass=""
   # pkg = packages
   export pkg_base=""
-
   export pkg_list=""
+  export pkg_services=""
 
 
   while true; do
@@ -693,7 +722,7 @@ main() {
         1) loadProfile ;;
         2) diskMenu ;;
         3) review ;;
-        4) install;;
+        4) install ;;
         5) break 2 ;;
         *) pauseError 'Unknown option: '$REPLY''
       esac
