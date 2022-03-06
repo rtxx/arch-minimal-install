@@ -663,7 +663,7 @@ installOK() {
   # enable services on the profile
   enableServices
 
-  cp -f /etc/skel/* /mnt/home/$ui_username/
+  cp -rf /etc/skel/* /mnt/home/$ui_username/
   cp -f /etc/lightdm/* /mnt/etc/lightdm
 
   read -p "Install done!. Press enter to continue..."
