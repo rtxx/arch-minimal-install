@@ -253,9 +253,28 @@ loadProfile() {
   ui_rootpass=$( echo $profileJSON | jq --raw-output '.userinfo["rootpass"]' )
 
   # pkg = packages
-  pkg_baseArray=$( echo $profileJSON | jq --raw-output '.["basepkgs"][]' )
+  local pkg_baseArray=$( echo $profileJSON | jq --raw-output '.["basepkgs"][]' )
   for pkg in ${pkg_baseArray[@]}; do
     pkg_base=("${pkg_base[@]}" "$pkg")
+    pkg_list=("${pkg_list[@]}" "$pkg")
+  done
+
+  local pkg_xArray=$( echo $profileJSON | jq --raw-output '.["xpkgs"][]' )
+  for pkg in ${pkg_xArray[@]}; do
+    #pkg_x=("${pkg_x[@]}" "$pkg")
+    pkg_list=("${pkg_list[@]}" "$pkg")
+  done
+
+  local pkg_gpuArray=$( echo $profileJSON | jq --raw-output '.["gpupkgs"][]' )
+  for pkg in ${pkg_gpuArray[@]}; do
+    #pkg_gpu=("${pkg_gpu[@]}" "$pkg")
+    pkg_list=("${pkg_list[@]}" "$pkg")
+  done
+
+  local pkg_basePlusArray=$( echo $profileJSON | jq --raw-output '.["basepluspkgs"][]' )
+  for pkg in ${pkg_basePlusArray[@]}; do
+    #pkg_basePlus=("${pkg_basePlus[@]}" "$pkg")
+    pkg_list=("${pkg_list[@]}" "$pkg")
   done
 
   read -p "Profile selected: '$(basename ${profile})'"
@@ -309,8 +328,10 @@ review() {
   # column 1 and 2 size
   #local c1=6
   #local c2=16
-  printf "\e[1mBase packages\e[0m\n"
-  echo "${pkg_base[@]}"
+  #printf "\e[1mBase packages\e[0m\n"
+  #echo "${pkg_base[@]}"
+  printf "\e[1mPackage list\e[0m\n"
+  echo "${pkg_list[@]}"
 #  printf "\e[1m%-${c1}s %-${c2}s\e[0m\n" "[#]" "package"
 #   for ((i = 0 ; i < ${#pkg_base[@]} ; i++)); do
 #     local pkg=${pkg_base[$i]}
@@ -520,8 +541,8 @@ installOK() {
   printf "\n"
 
   # pacstrap new packages
-  printf "Installing base packages\n"
-  pacstrap /mnt ${pkg_base[@]}
+  printf "Installing packages\n"
+  pacstrap /mnt ${pkg_list[@]}
   printf "\n"
 
   # fstab gen
@@ -595,6 +616,8 @@ installOK() {
   printf "Set root password\n"
   echo "root:$ui_rootpass" | arch-chroot /mnt chpasswd
   printf "\n"
+
+  #TODO: not working, user still not on wheel group
   # config visudo
   printf "Visudo configuration\n"
   arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
@@ -657,6 +680,8 @@ main() {
   export ui_rootpass=""
   # pkg = packages
   export pkg_base=""
+
+  export pkg_list=""
 
 
   while true; do
