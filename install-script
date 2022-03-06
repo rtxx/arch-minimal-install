@@ -521,7 +521,7 @@ installOK() {
 
   # pacstrap new packages
   printf "Installing base packages\n"
-  pacstrap /mnt $pkg_base
+  pacstrap /mnt ${pkg_base[@]}
   printf "\n"
 
   # fstab gen
@@ -656,7 +656,7 @@ main() {
   export ui_userpass=""
   export ui_rootpass=""
   # pkg = packages
-  export basepkgs=""
+  export pkg_base=""
 
 
   while true; do
