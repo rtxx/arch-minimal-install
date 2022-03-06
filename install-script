@@ -1,493 +1,686 @@
-#!/bin/bash
-# Simple arch install script
-# REQUIREMENTS
-# 1- Internet connection
-# 2 - git glibc
+#!/usr/bin/env bash
+# simple arch installer
 
-#set -x # echo on
+# if [ "$EUID" -ne 0 ]; then
+#   echo "Please run as root"
+#   exit
+# fi
 
-export BOOT_SIZE=512MB
-export SWAP_SIZE=2GB
-export GRUB_UEFI_NAME=archlinux
+# set start program time
+readonly PROGSTARTTIME="$(date)"
 
-export HOST_NAME=archx64
-export KEYMAP=pt-latin1
-export LOCALE=en_US.UTF-8
+#set -o errexit
+#set -o nounset
+#set -o pipefail
 
-export USER_NAME=vuser
+# get the name of the script from its file name
+readonly PROGNAME=$(basename $0)
 
-PACSTRAP_PKG_LIST_BASE="base linux linux-firmware nano networkmanager grub efibootmgr os-prober sudo bash-completion"
-PACSTRAP_PKG_LIST_X="xorg-server xorg-xinit xorg-setxkbmap"
-PACSTRAP_PKG_LIST_I3="i3-gaps i3status i3lock python-i3ipc dmenu noto-fonts ttf-fantasque-sans-mono xterm htop nethogs arandr volumeicon dunst feh picom udiskie unclutter xorg-xinput xfce4-power-manager tlp cpupower polkit polkit-gnome polkit-qt5 networkmanager breeze breeze-gtk qt5ct lxappearance capitaine-cursors arc-icon-theme archlinux-wallpaper thunar tumbler ffmpegthumbnailer thunar-archive-plugin thunar-media-tags-plugin mousepad firefox neofetch scrot xdg-user-dirs lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings git gvfs gvfs-smb gvfs-mtp powertop pulseaudio pulseaudio-alsa alsa-utils pavucontrol ufw gufw gnome-keyring seahorse nano-syntax-highlighting xarchiver unrar"
+# get argurments
+#readonly ARGS=$@
 
-echo "arch minimal script install"
+# get script dir
+# https://stackoverflow.com/a/246128
+readonly PROGDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-if ping -q -w 1 -c 1 www.sapo.pt > /dev/null; then
-	lsblk -f
-	echo "Please enter disk:"
-	read -p "Disk to use (Please enter full path ie /dev/vda): " DISK
-	echo
-	
-	echo "Select partition table type"
-	echo "MBR and GPT auto install will use all disk and format everything, careful! "
-	options=("MBR - Auto Install" "GPT - Auto Install" "Manual" "Abort")
-	select opt in "${options[@]}"
-	do
-		case $opt in
-		    "MBR - Auto Install")
-		    	echo "MBR - Auto Installation"
-			echo "* * * Beware! All partitions will be primary! * * *"
-			echo "Partition table:"
-			echo " ${DISK}1 - /boot with ${BOOT_SIZE}"
-			echo " ${DISK}2 - /swap with ${SWAP_SIZE}"
-			echo " ${DISK}3 - /root with the remaining space"
-			read -p "Press enter to continue. Ctrl+C to cancel."
-			(
-			echo o # Create a new empty DOS partition table
-			echo n # Add /boot partition
-			echo p # Primary partition
-			echo 1 # Partition number
-			echo   # First sector default
-			echo +$BOOT_SIZE  # Size
-			echo n # Add /swap partition
-			echo p # Primary partition
-			echo 2 # Partition number
-			echo   # First sector default
-			echo +$SWAP_SIZE  # Size
-			echo n # Add /root partition
-			echo p # Primary partition
-			echo 3 # Partition number
-			echo   # First sector default
-			echo   # Size remaining
-			echo w # Write changes
-			) | fdisk $DISK
-			
-			# formating partitions
-			mkfs.ext4 "${DISK}1"
-			mkswap "${DISK}2"
-			mkfs.ext4 "${DISK}3"
-			
-			# mounting partitions
-			echo "Mounting partitions"
-			mount "${DISK}3" /mnt
-			mkdir /mnt/{boot,home}
-			mount "${DISK}1" /mnt/boot
-			swapon "${DISK}2"
-			
-			export PARTITION_TABLE_TYPE="MBR"
-			
-		        break
-		        ;;
-		    "GPT - Auto Install")
-			echo "GPT - Auto Installation"
-			echo "* * * Beware! This will only work with UEFI boot! * * *"			
-			echo "Partition table:"
-			echo " ${DISK}1 - /boot with ${BOOT_SIZE}"
-			echo " ${DISK}2 - /swap with ${SWAP_SIZE}"
-			echo " ${DISK}3 - /root with the remaining space"
-			read -p "Press enter to continue. Ctrl+C to cancel."
-			(
-			echo g # Create a new empty GPT partition table
-			echo n # Add /boot partition
-			echo 1 # Partition number
-			echo   # First sector default
-			echo +$BOOT_SIZE  # Size
-			echo n # Add /swap partition
-			echo 2 # Partition number
-			echo   # First sector default
-			echo +$SWAP_SIZE  # Size
-			echo n # Add /root partition
-			echo 3 # Partition number
-			echo   # First sector default
-			echo   # Size remaining
-			echo w # Write changes
-			) | fdisk $DISK
-			
-			# formating partitions
-			pacman -S dosfstools --noconfirm
-			mkfs.fat -F32 "${DISK}1"
-			mkswap "${DISK}2"
-			mkfs.ext4 "${DISK}3"
-			
-			# mounting partitions
-			echo "Mounting partitions"
-			mount "${DISK}3" /mnt
-			mkdir /mnt/{boot,home}
-			mkdir /mnt/boot/efi
-			mount "${DISK}1" /mnt/boot/efi
-			swapon "${DISK}2"
-			
-			export PARTITION_TABLE_TYPE="GPT"
-			
-		        break
-		        ;;
-		    "Manual")
-		    	echo "BEWARE HERE BE MANY MANY DRAGONS"
-			echo "Please format if needed and then use this, this will ONLY MOUNT partitions!"
-			echo "Open this script and remove this part! REMOVE WHAT IS NOT NEEDED"
-			exit
-			#MBR
-			#USE THIS FOR if /home is on the /root partition
-			#MOUNT PARTITION FOR /ROOT
-			echo "Mounting partitions"
-			mount /dev/my-root-partition /mnt 
-			mkdir /mnt/{boot,home}
-			mount /dev/my-boot-partition /mnt/boot
-			swapon /dev/my-swap-partition
-			
-			#USE THIS FOR if /home is on a separated partition
-			#MOUNT PARTITION FOR /ROOT
-			echo "Mounting partitions"
-			mount /dev/my-root-partition /mnt #root
-			mkdir /mnt/{boot,home}
-			mount /dev/my-boot-partition /mnt/boot
-			mount /dev/my-home-partition /mnt/home
-			swapon /dev/my-swap-partition
-			
-			#GPT
-			#USE THIS FOR if /home is on the /root partition
-			#MOUNT PARTITION FOR /ROOT
-			echo "Mounting partitions"
-			mount /dev/my-root-partition /mnt 
-			mkdir /mnt/{boot,home}
-			mkdir /mnt/boot/efi
-			mount /dev/my-boot-partition /mnt/boot/efi
-			swapon /dev/my-swap-partition
-			
-			#USE THIS FOR if /home is on a separated partition
-			#MOUNT PARTITION FOR /ROOT
-			echo "Mounting partitions"
-			mount /dev/my-root-partition /mnt #root
-			mkdir /mnt/{boot,home}
-			mkdir /mnt/boot/efi
-			mount /dev/my-boot-partition /mnt/boot/efi
-			mount /dev/my-home-partition /mnt/home
-			swapon /dev/my-swap-partition			
-		        break
-		        ;;
-		    "Abort")
-			echo "Aborting..."
-		        exit
-		        ;;
-		    *) echo "invalid option $REPLY";;
-		esac
-	done
-	echo
-	
-	# add multilib for liveiso
-	sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
-	
-	# pacstrap new packages
-	echo "Installing packages with pacstrap"
-	pacstrap /mnt $PACSTRAP_PKG_LIST_BASE
-	echo
-		
-	echo "CPU microde installation"
-	options=("Intel" "AMD" "Dont install" "Abort")
-	select opt in "${options[@]}"
-	do
-		case $opt in
-		    "Intel")
-		        pacstrap /mnt intel-ucode
-		        break
-		        ;;
-		    "AMD")
-		        pacstrap /mnt amd-ucode
-		        break
-		        ;;
-		    "Dont install")
-		        break
-		        ;;
-		    "Abort")
-			echo "Aborting..."
-		        exit
-		        ;;
-		    *) echo "invalid option $REPLY";;
-		esac
-	done
-	echo
-	
-	# fstab gen
-	echo "Generating fstab"
-	genfstab -U /mnt >> /mnt/etc/fstab
-	echo
-		
-	# chroot into the new system
-	#echo "chroot into the new system"
-	#arch-chroot /mnt
-	#echo
-	
-	# setting timezone
-	echo "Setting Timezone"
-	arch-chroot /mnt timedatectl set-timezone Europe/Lisbon
-	echo
-	
-	# generate /etc/adjtime
-	echo "Generate /etc/adjtime"
-	arch-chroot /mnt hwclock --systohc
-	echo
-		
-	# select locale
-	echo "Selecting locale $LOCALE"
-	#nano /etc/locale.gen
-	arch-chroot /mnt sed -i "s/#$LOCALE/$LOCALE/" /etc/locale.gen
-	arch-chroot /mnt locale-gen
-	#echo
-	
-	# create locale.conf
-	echo "Creating locale.conf"
-	#arch-chroot /mnt echo "LANG=$LOCALE" >> /etc/locale.conf
-	echo "LANG=$LOCALE" >> /mnt/etc/locale.conf
-	echo
-	
-	# setting keyboard layout 
-	echo "Setting keyboard layout"
-	#arch-chroot /mnt echo "KEYMAP=$KEYMAP" >> /etc/vconsole.conf
-	echo "KEYMAP=$KEYMAP" >> /mnt/etc/vconsole.conf
-	echo
-	
-	# setting hostname 
-	echo "Setting host name"
-	#arch-chroot /mnt echo "$HOST_NAME" >> /etc/hostname
-	echo "$HOST_NAME" >> /mnt/etc/hostname
-	echo
-	
-	# setting hosts file 
-	echo "Setting hosts file"
-	#arch-chroot /mnt echo -e "127.0.0.1 localhost\n::1 localhost\n127.0.1.1 $HOST_NAME.localdomain $HOST_NAME" >> /etc/hosts
-	echo -e "127.0.0.1	localhost\n::1		localhost\n127.0.1.1	$HOST_NAME.localdomain	$HOST_NAME" >> /mnt/etc/hosts
-	#echo
-	
-	# enable networkmanager service 
-	echo "Enable networkmanager service"
-	arch-chroot /mnt systemctl enable NetworkManager.service
-	echo	
-	
-	# recreate initramfs 
-	echo "Recreate initramfs"
-	arch-chroot /mnt mkinitcpio -P
-	echo
-	
-	#TODO: AUTOMATE THIS
-	echo "GRUB Install:"
-	echo "Reminder: Partition table type is * * * ${PARTITION_TABLE_TYPE} * * *"
-	options=("MBR" "UEFI" "Dont install" "Abort")
-	select opt in "${options[@]}"
-	do
-		case $opt in
-		    "MBR")
-		        arch-chroot /mnt grub-install --target=i386-pc $DISK
-		        break
-		        ;;
-		    "UEFI")
-		        arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=$GRUB_UEFI_NAME
-		        break
-		        ;;
-		    "Dont install")
-		        break
-		        ;;
-		    "Abort")
-			echo "Aborting..."
-		        exit
-		        ;;
-		    *) echo "invalid option $REPLY";;
-		esac
-	done
-	echo
-	
-	# generate main config file for grub
-	echo "Generate main config file for grub"
-	arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
-	echo
-	
-	# set root password
-	echo "Set root password"
-	arch-chroot /mnt passwd
-	echo
-	
-	# config visudo
-	echo "Visudo configuration"
-	arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
-	echo
-	
-	# Create a new user and add it to the wheel group.
-	echo "Creating $USER_NAME profile "
-	arch-chroot /mnt useradd -m -G wheel $USER_NAME
-	
-	# creates a new password for new user
-	echo "Please enter $USER_NAME password "
-	arch-chroot /mnt passwd $USER_NAME
-	echo
-	
-	# Basic pacman configuration
-	echo "Pacman configuration and enabling multilib repo"
-	arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
-	arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
-	echo
-	
-	echo "Install X Server?"
-	read -p "Continue? [Y/y] to continue, anything else cancel." -n 1 -r
-	echo
-	if [[ $REPLY =~ ^[Yy]$ ]]
-	then
-		# X install
-		echo "X Install"
-		pacstrap /mnt $PACSTRAP_PKG_LIST_X
-		
-		# graphics drivers 
-		echo "Graphic Drivers Installation"
-		echo "Warning! Here be dragons! Very little testing was done!"
-		options=("Intel" "AMD" "NVIDIA" "Nouveau NVIDIA" "Dont install" "Abort")
-		select opt in "${options[@]}"
-		do
-			case $opt in
-			    "Intel")
-				pacstrap /mnt xf86-video-intel mesa lib32-mesa
-				break
-				;;
-			    "AMD")
-				pacstrap /mnt xf86-video-amdgpu mesa lib32-mesa
-				break
-				;;
-			    "NVIDIA")
-				pacstrap /mnt nvidia nvidia-utils lib32-nvidia-utils mesa lib32-mesa
-				break
-				;;
-			    "Nouveau NVIDIA")
-				pacstrap /mnt xf86-video-nouveau mesa lib32-mesa
-				break
-				;;
-			    "Dont install")
-				break
-				;;
-			    "Abort")
-				echo "Aborting..."
-				exit
-				;;
-			    *) echo "invalid option $REPLY";;
-			esac
-		done
-		
-		#DE Installation
-		echo "Desktop Environment Installation"
-		echo "Warning! Here be dragons! Very little testing was done!"
-		options=("GNOME" "KDE" "XFCE" "i3" "i3gaps - My Configs" "Dont install" "Abort")
-		select opt in "${options[@]}"
-		do
-			case $opt in
-			    "GNOME")
-				pacstrap /mnt gnome gnome-extra gdm
-				arch-chroot /mnt systemctl enable gdm
-				break
-				;;
-			    "KDE")
-				pacstrap /mnt plasma dolphin konsole firefox sddm xdg-user-dirs packagekit-qt5
-				arch-chroot /mnt systemctl enable sddm
-				break
-				;;
-			    "XFCE")
-				pacstrap /mnt xfce4 xfce4-goodies lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-				arch-chroot /mnt systemctl enable lightdm
-				break
-				;;
-			    "i3")
-				pacstrap /mnt i3 i3status i3lock dmenu xterm lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-				arch-chroot /mnt systemctl enable lightdm
-				break
-				;;
-			    "i3gaps - My Configs")
-				pacstrap /mnt $PACSTRAP_PKG_LIST_I3
-				arch-chroot /mnt systemctl enable lightdm
-				
-				# creating common folders
-				arch-chroot /mnt xdg-user-dirs-update
-				
-				#setting default terminal
-				echo "TERMINAL=xterm" >> /mnt/etc/environment
-				
-				# nano configuration
-				echo "include /usr/share/nano-syntax-highlighting/*.nanorc" >> /mnt/etc/nanorc
-				echo "set mouse" >> /mnt/etc/nanorc
-				
-				# qt configuration
-				echo "QT_QPA_PLATFORMTHEME=qt5ct" >> /mnt/etc/environment
-				
-				# enabling firewall
-				arch-chroot /mnt systemctl enable ufw
-				
-				# TODO:  change this bit to a external file 
-				# getting i3 with my dot files
-				# creates a bash file that you must run when logging in
-				echo "#!/bin/bash" >> configi3
-				echo "if [ "$EUID" -ne 0 ]" >> configi3
-				echo "	then echo "Please run as root"" >> configi3
-				echo "  	exit" >> configi3
-				echo "fi" >> configi3
-				
-				#get files from git
-				echo "git clone http://github.com/rtxx/i3-config.git /tmp/i3" >> configi3 
+# set log file
+readonly PROGLOG="$PROGDIR/$PROGNAME.log"
+# activates log file
+readonly LOGTOFILE=1
 
-				# fix git files permissions
-				echo "chown -R $USER_NAME:$USER_NAME /tmp/i3" >> configi3
-				echo "find /tmp/i3 -type f -print0 | xargs -0 chmod 664" >> configi3
-				echo "find /tmp/i3 -type d -print0 | xargs -0 chmod 775" >> configi3
-				
-				# copy dot files
-				echo "cp -rp /tmp/i3/. /home/$USER_NAME/" >> configi3
-				echo "cp -r /tmp/i3/lightdm-gtk-greeter.conf /etc/lightdm/" >> configi3
-				echo "chmod +x /home/$USER_NAME/.config/i3/scripts/*" >> configi3
-				
-				# deletes unwanted files
-				echo "rm -rf /home/$USER_NAME/.git /home/$USER_NAME/LICENSE /home/$USER_NAME/README.md /home/$USER_NAME/breezeblack.kra /home/$USER_NAME/screenshot.png /home/$USER_NAME/screenshot2.png /home/$USER_NAME/vm-lighdm.png" >> configi3
-				
-				# creates/updates common folders
-				echo "xdg-user-dirs-update" >> configi3
-				
-				# sets x keyboard layout
-				echo "localectl set-x11-keymap pt" >> configi3
-				echo "echo Please relog to apply settings." >> configi3
-				
-				# permission to execute
-				chmod +x configi3
-				
-				# moves to home dir
-				mv configi3 /mnt/home/$USER_NAME/
-				echo "Please run sudo configi3 on 1st login with $USER_NAME account, located on home."
-				
-				echo
-				break
-				;;
-			    "Dont install")
-				break
-				;;
-			    "Abort")
-				echo "Aborting..."
-				exit
-				;;
-			    *) echo "invalid option $REPLY";;
-			esac
-		done
-		
-		echo		
-	
-	fi
+# TODO: replaces this global with another system
+# check if notification mensage is going to be displayed.
+warnNotification=0
 
-	read -p "Instalation Done. Please reboot."
-	exit
-				
-else
-	echo "Please check internet connection."
-fi
+printHelp() {
+cat << HELPME
+
+Simple install script for archlinux.
+
+Usage: $PROGNAME
+
+options
+  -h, --help    shows this help
+
+Examples
+  $PROGNAME
+
+HELPME
+}
+
+# color support, thanks https://gist.github.com/elucify/c7ccfee9f13b42f11f81
+RESTORE=$(echo -en '\033[0m')
+RED=$(echo -en '\033[00;31m')
+GREEN=$(echo -en '\033[00;32m')
+YELLOW=$(echo -en '\033[00;33m')
+BLUE=$(echo -en '\033[00;34m')
+MAGENTA=$(echo -en '\033[00;35m')
+PURPLE=$(echo -en '\033[00;35m')
+CYAN=$(echo -en '\033[00;36m')
+LIGHTGRAY=$(echo -en '\033[00;37m')
+LRED=$(echo -en '\033[01;31m')
+LGREEN=$(echo -en '\033[01;32m')
+LYELLOW=$(echo -en '\033[01;33m')
+LBLUE=$(echo -en '\033[01;34m')
+LMAGENTA=$(echo -en '\033[01;35m')
+LPURPLE=$(echo -en '\033[01;35m')
+LCYAN=$(echo -en '\033[01;36m')
+WHITE=$(echo -en '\033[01;37m')
+BOLD=$(echo -en '\033[1m')
+UNDERLINE=$(echo -en '\033[4')
+
+# exit code function
+# exit the script with a custom exit code
+# exitCode code_error verbose text_to_show
+#   code_error
+#     0...n : exit error code
+#   verbose
+#     1 : if on, then outputs to the screen the description of the exit code
+#   text_to_show
+#     text : custom text to show with the exit code
+exitCode() {
+  local exitCodeList
+  exitCodeList[0]="[Info]: Complete with no errors."
+  #exitCodeList[1]="Bash reserved: Catchall for general errors"
+  #exitCodeList[2]="Bash reserved: Misuse of shell builtins"
+  exitCodeList[3]="[Error]: $3"
+  exitCodeList[4]="[Error]: Unknown option: '${3}' (use -h for help)"
+  exitCodeList[5]="[Error]: Dependency not installed: '$3'"
+  exitCodeList[6]="[Error]: JSON not valid: '$3'"
+
+  # check if exit code is an error then send a notification
+  if [[ $1 -eq 3 || $1 -eq 4 || $1 -eq 5 || $1 -eq 6 ]]; then
+    warnNotification=2
+  fi
+
+  # loops the exit code list
+  for i in "${!exitCodeList[@]}"; do
+    if [[ "$1" == "$i" ]]; then
+      # checks if verbose flag is active, if so echo the error description
+      if [[ "$2" == "1" ]]; then
+        echo ${BOLD}${exitCodeList[${i}]}${RESTORE}
+      fi
+      # calculates script runtime
+      local startTime=$(date --date "${PROGSTARTTIME}" -u +%s)
+      local endTime=$(date --utc +%s)
+      local elapsedTime=$(($endTime-$startTime))
+
+      if [[ ${warnNotification} -eq 1 ]]; then
+        notify-send -t 2000 "$PROGNAME" "Complete but with warnings, check log for more info."
+      elif [[ ${warnNotification} -eq 2 ]]; then
+        notify-send -t 2000 "$PROGNAME" "Error! Check log for more info."
+      else
+        notify-send -t 2000 "$PROGNAME" "Complete."
+      fi
+
+      # logs description and type of exit code
+      logMe 3 "${exitCodeList[${i}]} [${i}]"
+      logMe "End at $(date +"%Y/%m/%d %H:%M:%S"). Runtime: ${elapsedTime}s."
+      # exists with the error code 'i'
+      exit $i
+    fi
+  done
+}
+
+# log function
+# logs simple text to log file PROGLOG
+# logMe type_of_log_msg msg outputs_to_screen
+#   type_of_log_msg
+#     0 : Info
+#     1 : Error
+#     2 : Warning
+#     3 : Freehand
+#   msg
+#     text
+#   outputs_to_screen
+#     1 : if on, outputs text to the screen
+logMe() {
+  # if no argument is given, then log to file a info text
+  if [[ $# -eq 1 ]]; then
+    if [[ "$LOGTOFILE" == 1 ]]; then echo -e "[Info]: $*" >> ${PROGLOG} ; fi
+  fi
+
+  # log type : info
+  if [[ "$1" == "0" ]]; then
+    if [[ "$LOGTOFILE" == 1 ]]; then echo -e "[Info]: $2" >> ${PROGLOG} ; fi
+    if [[ "$3" == "1" ]]; then echo -e "${BLUE}${BOLD}::${RESTORE} $2" ; fi
+  fi
+
+  # log type : error
+  if [[ "$1" == "1" ]]; then
+    if [[ "$LOGTOFILE" == 1 ]]; then echo -e "[ERROR]: $2" >> ${PROGLOG} ; fi
+    if [[ "$3" == "1" ]]; then echo -e "${RED}${BOLD}::${RESTORE} $2" ; fi
+    notify-send -t 2000 "$PROGNAME" "Error! Check log for more info."
+  fi
+
+  # log type : warning
+  if [[ "$1" == "2" ]]; then
+    if [[ "$LOGTOFILE" == 1 ]]; then echo -e "[Warning]: $2" >> ${PROGLOG} ; fi
+    if [[ "$3" == "1" ]]; then echo -e "${YELLOW}${BOLD}::${RESTORE} $2" ; fi
+    warnNotification=1
+
+  fi
+
+  # log type : freehand
+  if [[ "$1" == "3" ]]; then
+    if [[ "$LOGTOFILE" == 1 ]]; then echo -e "$2" >> ${PROGLOG} ; fi
+    if [[ "$3" == "1" ]]; then echo -e "$2" ; fi
+  fi
+}
+
+# check if dependencies are met
+checkDependencies() {
+  dependencies=("sudo" "jq" "git" "glibc")
+  for pkg in ${dependencies[@]}; do
+    checkDependency=$(pacman -Q $pkg 2>&1)
+    exitStatus=$?
+    if [ "$exitStatus" -eq 1 ]; then
+      logMe 1 "Dependency not installed: '${pkg}'"
+      exitCode 5 1 "${pkg}"
+    fi
+  done
+}
+
+#loops the argument string until is done
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case "$key" in
+    -h|--help) printHelp=1 ;;
+    *) exitCode 4 1 "${key}" ;;
+  esac
+  shift
+done
+
+# checks if JSON files is valid
+# empty files will NOT error out
+verifyJSON() {
+  if jq empty "$1" 2>/dev/null; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+pauseError() {
+  read -p "${RED}::${RESTORE} $*"
+}
+
+loadProfile() {
+  clear
+  printf "\e[1m.:: Profiles avaiable ::.\e[0m\n"
+  printf "\n"
+
+  local avaiableProfiles
+  #printf "%-16s %-4s %-16s\n" "[name]" " " "[status]"
+  for profilePath in $PROGDIR/profiles/*
+  do
+    if verifyJSON $profilePath ; then
+      #printf "%-16s %-4s \e[32m%-16s\e[0m\n" "$(basename $profile)" "-->" "OK"
+      avaiableProfiles=("${avaiableProfiles[@]}" "$profilePath")
+      #echo "${GREEN}-->${RESTORE} $(basename $currentThemeDir)"
+    #else
+      #printf "%-16s %-4s \e[31m%-16s\e[0m\n" "$(basename $profile)" "-->" "Invalid JSON"
+      #echo "${RED}--> Invalid JSON:${RESTORE} $(basename $currentThemeDir)"
+    fi
+  done
+
+  # prints avaiable and verified profiles
+  printf "\e[1m%-2s %-2s %-16s %-16s\e[0m\n" "[#]" "" "Profile Name"
+  for ((i = 0 ; i < ${#avaiableProfiles[@]} ; i++)); do
+    local cprofile=${avaiableProfiles[$i]}
+    printf "%-2s %-2s %-16s %-16s\n" "[$i]" "->" "$(basename ${cprofile})"
+  done
+  printf "\n"
+  read -p "Select your profile [#]: " nprofile
+  profile=${avaiableProfiles[$nprofile]}
+
+  # load JSON into var
+  local profileJSON=$(cat $profile)
+
+  # load jq values into vars
+  # di = diskinfo
+  di_bootSize=$( echo $profileJSON | jq --raw-output '.diskinfo["boot-size"]' )
+  di_swapSize=$( echo $profileJSON | jq --raw-output '.diskinfo["swap-size"]' )
+  di_grubUEFIName=$( echo $profileJSON | jq --raw-output '.diskinfo["grub-uefi-name"]' )
+  # si = systeminfo
+  si_hostName=$( echo $profileJSON | jq --raw-output '.systeminfo["hostname"]' )
+  si_keymap=$( echo $profileJSON | jq --raw-output '.systeminfo["keymap"]' )
+  si_locale=$( echo $profileJSON | jq --raw-output '.systeminfo["locale"]' )
+  si_timezone=$( echo $profileJSON | jq --raw-output '.systeminfo["timezone"]' )
+  # ui = userinfo
+  ui_username=$( echo $profileJSON | jq --raw-output '.userinfo["username"]' )
+  ui_userpass=$( echo $profileJSON | jq --raw-output '.userinfo["userpass"]' )
+  ui_rootpass=$( echo $profileJSON | jq --raw-output '.userinfo["rootpass"]' )
+
+  # pkg = packages
+  pkg_baseArray=$( echo $profileJSON | jq --raw-output '.["basepkgs"][]' )
+  for pkg in ${pkg_baseArray[@]}; do
+    pkg_base=("${pkg_base[@]}" "$pkg")
+  done
+
+  read -p "Profile selected: '$(basename ${profile})'"
+  logMe 0 "Profile used: '$(basename ${profile})'"
+
+}
+
+review() {
+  clear
+  # column 1 and 2 size
+  local c1=22
+  local c2=16
+
+  printf "\e[1m.:: Review Menu ::.\e[0m\n"
+  printf "\n"
+  logMe 0 "Review Menu"
+  if [[ "$profile" ]]; then
+    printf "Profile selected: '$(basename $profile)'\n"
+  else
+    printf "Profile selected: 'none'\n"
+  fi
+  printf "\n"
+  printf "\e[1mDisk info\e[0m\n"
+  printf "%-${c1}s %-2s %-${c1}s\n" "Boot partition size" ":" "$di_bootSize"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Swap partition size" ":" "$di_swapSize"
+  if [[ "${di_installDisk}" ]]; then
+    printf "Partition table. Type: $di_partType\n"
+    printf " ${di_installDisk}1 - /boot with $di_bootSize\n"
+    printf " ${di_installDisk}2 - /swap with $di_swapSize\n"
+    printf " ${di_installDisk}3 - /root with the remaining space\n"
+    if [[ "$di_partType" = "GPT" ]]; then
+      printf "%-${c1}s %-2s %-${c2}s\n" "grub UEFI name entry" ":" "$di_grubUEFIName"
+    fi
+  fi
+  printf "\n"
+
+  printf "\e[1mSystem info\e[0m\n"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Hostname" ":" "$si_hostName"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Keymap" ":" "$si_keymap"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Locale" ":" "$si_locale"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Time zone" ":" "$si_timezone"
+  printf "\n"
+
+  printf "\e[1mUser info\e[0m\n"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Username" ":" "$ui_username"
+  printf "%-${c1}s %-2s %-${c2}s\n" "User password" ":" "$ui_userpass"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Root password" ":" "$ui_rootpass"
+  printf "\n"
+
+  #TODO: change to a better output, maybe 2,3 pkg per line
+  # column 1 and 2 size
+  #local c1=6
+  #local c2=16
+  printf "\e[1mBase packages\e[0m\n"
+  echo "${pkg_base[@]}"
+#  printf "\e[1m%-${c1}s %-${c2}s\e[0m\n" "[#]" "package"
+#   for ((i = 0 ; i < ${#pkg_base[@]} ; i++)); do
+#     local pkg=${pkg_base[$i]}
+#     printf "%-${c1}s %-${c2}s\n" "[$i]" "${pkg}"
+#   done
+  printf "\n"
+
+  read -p "Press enter to continue..."
+
+}
+
+diskMenu() {
+  while true; do
+  clear
+  printf "\e[1m .:: Disk menu ::.\e[0m\n"
+  printf "\e[1mCurrently manual partition is not avaiable.\e[0m\n"
+  select diskmenu in 'Review' 'MBR' 'GPT' 'Back'
+    do
+      case $REPLY in
+        1) dmReview ;;
+        2) dmMBR ;;
+        3) dmGPT ;;
+        4) break 2 ;;
+        *) echo 'Please select an option.' >&2
+      esac
+      break
+    done
+  done
+}
+
+dmReview() {
+  clear
+  printf "\e[1m.:: Disk review ::.\e[0m\n"
+  printf "\n"
+
+  # column 1 and 2 size
+  local c1=22
+  local c2=16
+
+  printf "%-${c1}s %-2s %-${c1}s\n" "Boot partition size" ":" "$di_bootSize"
+  printf "%-${c1}s %-2s %-${c2}s\n" "Swap partition size" ":" "$di_swapSize"
+  if [[ "${di_installDisk}" ]]; then
+    printf "Partition table. Type: $di_partType\n"
+    printf " ${di_installDisk}1 - /boot with $di_bootSize\n"
+    printf " ${di_installDisk}2 - /swap with $di_swapSize\n"
+    printf " ${di_installDisk}3 - /root with the remaining space\n"
+    if [[ "$di_partType" = "GPT" ]]; then
+      printf "%-${c1}s %-2s %-${c2}s\n" "grub UEFI name entry" ":" "$di_grubUEFIName"
+    fi
+  fi
+  printf "\n"
+  printf "Current partition layout, doesnt account for the new changes!\n"
+  lsblk -f
+  printf "\n"
+  read -p "Press enter to continue..."
+
+}
+
+dmMBR() {
+  clear
+  printf "\e[1m.:: Disk - Install as MBR ::.\e[0m\n"
+  printf "\n"
+  printf "Running 'lsblk -f'\n"
+  lsblk -f
+  printf "\n"
+  read -p "Type destination disk (Please enter full path ie /dev/vda): " di_installDisk
+  printf "\n"
+  printf "\e[1m* * * Beware! All partitions will be primary! * * *\e[0m\n"
+  printf "\n"
+  printf "\e[1m$di_installDisk\e[0m set to install destination.\n"
+  printf "Partition table:\n"
+  printf " ${di_installDisk}1 - /boot with $di_bootSize\n"
+  printf " ${di_installDisk}2 - /swap with $di_swapSize\n"
+  printf " ${di_installDisk}3 - /root with the remaining space\n"
+  #read -p "Press enter to continue. Ctrl+C to cancel."
+
+  di_bootPart=${di_installDisk}1
+  di_swapPart=${di_installDisk}2
+  di_rootPart=${di_installDisk}3
+
+  di_partType="MBR"
+
+  printf "\n"
+  read -p "Press enter to continue..."
+}
+
+dmGPT() {
+  clear
+  printf "\e[1m.:: Disk - Install as GPT ::.\e[0m\n"
+  printf "\n"
+  printf "Running 'lsblk -f'\n"
+  lsblk -f
+  printf "\n"
+  read -p "Type destination disk (Please enter full path ie /dev/vda): " di_installDisk
+  printf "\n"
+  printf "\e[1m$di_installDisk\e[0m set to install destination.\n"
+  printf "Partition table:\n"
+  printf " ${di_installDisk}1 - /boot with $di_bootSize\n"
+  printf " ${di_installDisk}2 - /swap with $di_swapSize\n"
+  printf " ${di_installDisk}3 - /root with the remaining space\n"
+  #read -p "Press enter to continue. Ctrl+C to cancel."
+
+  di_bootPart=${di_installDisk}1
+  di_swapPart=${di_installDisk}2
+  di_rootPart=${di_installDisk}3
+
+  di_partType="GPT"
+
+  printf "\n"
+  read -p "Press enter to continue..."
+}
+
+install() {
+  review
+  local awsr=""
+  while true; do
+    read -p "Install arch with the above configuration? (y/n) " yn
+    printf "\n"
+    case $yn in
+      [Yy]* ) installOK ;;
+      [Nn]* ) break ;;
+      * ) printf "Please use [y]es or [n]o\n";;
+    esac
+  done
+}
+
+installOK() {
+
+  printf Formating $di_installDisk"\n"
+  if [[ "$di_partType" == "MBR" ]]; then
+    (
+      echo o # Create a new empty DOS partition table
+      echo n # Add /boot partition
+      echo p # Primary partition
+      echo 1 # Partition number
+      echo   # First sector default
+      echo +$di_bootSize  # Size
+      echo n # Add /swap partition
+      echo p # Primary partition
+      echo 2 # Partition number
+      echo   # First sector default
+      echo +$di_swapSize  # Size
+      echo n # Add /root partition
+      echo p # Primary partition
+      echo 3 # Partition number
+      echo   # First sector default
+      echo   # Size remaining
+      echo w # Write changes
+    ) | fdisk $di_installDisk
+    printf "\n"
+
+    # formating partitions
+    printf "Making filesystem\n"
+    mkfs.ext4 "${di_installDisk}1"
+    mkswap "${di_installDisk}2"
+    mkfs.ext4 "${di_installDisk}3"
+
+    # mounting partitions
+    printf "Mounting partitions\n"
+    mount "${di_installDisk}3" /mnt
+    mkdir /mnt/{boot,home}
+    mount "${di_installDisk}1" /mnt/boot
+    swapon "${di_installDisk}2"
+  fi
+  printf "\n"
+
+  if [[ "$di_partType" == "GPT" ]]; then
+    (
+      echo g # Create a new empty GPT partition table
+      echo n # Add /boot partition
+      echo 1 # Partition number
+      echo   # First sector default
+      echo +$di_bootSize  # Size
+      echo n # Add /swap partition
+      echo 2 # Partition number
+      echo   # First sector default
+      echo +$di_swapSize  # Size
+      echo n # Add /root partition
+      echo 3 # Partition number
+      echo   # First sector default
+      echo   # Size remaining
+      echo w # Write changes
+    ) | fdisk $di_installDisk
+    printf "\n"
+
+    # formating partitions
+    printf "Making filesystem\n"
+    pacman -S dosfstools --noconfirm
+    mkfs.fat -F32 "${di_installDisk}1"
+    mkswap "${di_installDisk}2"
+    mkfs.ext4 "${di_installDisk}3"
+
+    # mounting partitions
+    printf "Mounting partitions\n"
+    mount "${di_installDisk}3" /mnt
+    mkdir /mnt/{boot,home}
+    mkdir /mnt/boot/efi
+    mount "${di_installDisk}1" /mnt/boot/efi
+    swapon "${di_installDisk}2"
+  fi
+
+  printf "\n"
+
+  # add multilib for liveiso
+  sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+  pacman -Sy
+  printf "\n"
+
+  # pacstrap new packages
+  printf "Installing base packages\n"
+  pacstrap /mnt $pkg_base
+  printf "\n"
+
+  # fstab gen
+  printf "Generating fstab\n"
+  genfstab -U /mnt >> /mnt/etc/fstab
+  printf "\n"
+
+  # setting timezone
+  printf "Setting Timezone\n"
+  arch-chroot /mnt timedatectl set-timezone $TIMEZONE
+  printf "\n"
+
+  # generate /etc/adjtime
+  printf "Generate /etc/adjtime\n"
+  arch-chroot /mnt hwclock --systohc
+  printf "\n"
+
+  # select locale
+  printf "Selecting locale $si_locale\n"
+  arch-chroot /mnt sed -i "s/#${si_locale}/${si_locale}/" /etc/locale.gen
+  arch-chroot /mnt locale-gen
+  printf "\n"
+
+  # create locale.conf
+  printf "Creating locale.conf\n"
+  echo "LANG=$si_locale" >> /mnt/etc/locale.conf
+  printf "\n"
+
+  # setting keyboard layout
+  printf "Setting keyboard layout\n"
+  echo "KEYMAP=$si_keymap" >> /mnt/etc/vconsole.conf
+  printf "\n"
+
+  # setting hostname
+  printf "Setting host name\n"
+  echo "$si_hostName" >> /mnt/etc/hostname
+  printf "\n"
+
+  # setting hosts file
+  printf "Setting hosts file\n"
+  echo -e "127.0.0.1	localhost\n::1		localhost\n127.0.1.1	$si_hostName.localdomain	$si_hostName" >> /mnt/etc/hosts
+  printf "\n"
+
+  # enable networkmanager service
+  printf "Enable networkmanager service\n"
+  arch-chroot /mnt systemctl enable NetworkManager.service
+  printf "\n"
+
+  # recreate initramfs
+  printf "Recreate initramfs\n"
+  arch-chroot /mnt mkinitcpio -P
+  printf "\n"
+
+  #grub install
+  printf "GRUB Install\n"
+  if [[ "$di_partType" == "MBR" ]]; then
+    arch-chroot /mnt grub-install --target=i386-pc $di_installDisk
+  fi
+
+  if [[ "$di_partType" == "GPT" ]]; then
+    arch-chroot /mnt grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=$di_grubUEFIName
+  fi
+  printf "\n"
+
+  # generate main config file for grub
+  printf "Generate main config file for grub\n"
+  arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  printf "\n"
+
+  # set root password
+  printf "Set root password\n"
+  echo "root:$ui_rootpass" | arch-chroot /mnt chpasswd
+  printf "\n"
+  # config visudo
+  printf "Visudo configuration\n"
+  arch-chroot /mnt  sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
+  printf "\n"
+
+  # Create a new user and add it to the wheel group.
+  printf "Creating $ui_username profile\n"
+  arch-chroot /mnt useradd -m -G wheel $ui_username
+
+  # creates a new password for new user
+  echo "$ui_username:$ui_userpass" | arch-chroot /mnt chpasswd
+  printf "\n"
+
+  # Basic pacman configuration
+  printf "Pacman configuration and enabling multilib repo\n"
+  arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
+  arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
+  printf "\n"
+
+  read -p "Install done!. Press enter to continue..."
+}
+
+main() {
+
+  # log start of the script
+  logMe "Start at $(date --date "${PROGSTARTTIME}" +"%Y/%m/%d %H:%M:%S")"
+  #logMe 0 "${PROGNAME} started"
+
+  # check if all dependencies necessary are installed
+  checkDependencies
+
+  # if help flag is true
+  if [ "$printHelp" ]; then
+    printHelp
+    exitCode 0
+  fi
+
+  # export vars
+  export profile=""
+  export di_bootSize=""
+  export si_hostName=""
+  # di = diskinfo
+  export di_bootSize=""
+  export di_swapSize=""
+  export di_grubUEFIName=""
+
+  export di_bootPart=""
+  export di_swapPart=""
+  export di_rootPart=""
+  export di_partType=""
+
+  # si = systeminfo
+  export si_hostName=""
+  export si_keymap=""
+  export si_locale=""
+  export si_timezone=""
+  # ui = userinfo
+  export ui_username=""
+  export ui_userpass=""
+  export ui_rootpass=""
+  # pkg = packages
+  export basepkgs=""
 
 
-# Sources
-# https://devhints.io/bash
-# https://stackoverflow.com/questions/929368/how-to-test-an-internet-connection-with-bash
-# https://stackoverflow.com/questions/1885525/how-do-i-prompt-a-user-for-confirmation-in-bash-script
-# https://askubuntu.com/questions/1705/how-can-i-create-a-select-menu-in-a-shell-script
-# https://serverfault.com/questions/7503/how-to-determine-if-a-bash-variable-is-empty
-# https://github.com/honze-net/dalu/blob/main/example.sh
-# https://github.com/jleclanche/dotfiles/blob/master/install-arch.sh
-# https://stackoverflow.com/questions/34515193/sed-pacman-conf-remove-for-multilib-include
-# https://stackoverflow.com/questions/18215973/how-to-check-if-running-as-root-in-a-bash-script
-# https://superuser.com/questions/332252/how-to-create-and-format-a-partition-using-a-bash-script
+  while true; do
+  clear
+  printf "\e[1m.:: Arch minimal install ::.\e[0m\n"
+  select mainMenu in 'Load profile' 'Disk Menu' 'Review' 'Install' 'Quit'
+    do
+      case $REPLY in
+        1) loadProfile ;;
+        2) diskMenu ;;
+        3) review ;;
+        4) install;;
+        5) break 2 ;;
+        *) pauseError 'Unknown option: '$REPLY''
+      esac
+      break
+    done
+  done
+
+  # if script reachs here, then it went without any errors, nice.
+  logMe 0 "Complete." 1
+  exitCode 0
+
+}
+
+# run main function
+main
