@@ -669,8 +669,8 @@ installOK() {
 
   # fix files permissions
   arch-chroot /mnt chown -R $ui_username:$ui_username /home/$ui_username/
-  arch-chroot /mnt find /home/$ui_username/ -type f -print0 | xargs -0 chmod 664
-  arch-chroot /mnt find /home/$ui_username/ -type d -print0 | xargs -0 chmod 775
+  #arch-chroot /mnt find /home/$ui_username/ -type f -print0 | xargs -0 chmod 664
+  #arch-chroot /mnt find /home/$ui_username/ -type d -print0 | xargs -0 chmod 775
 
   # copy lightdm config
   cp -f /etc/lightdm/* /mnt/etc/lightdm
