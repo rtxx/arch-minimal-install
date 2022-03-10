@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # simple arch installer
 
-# if [ "$EUID" -ne 0 ]; then
-#   echo "Please run as root"
-#   exit
-# fi
+if [ "$EUID" -ne 0 ]; then
+   echo "Please run as root"
+   exit
+fi
 
 # set start program time
 readonly PROGSTARTTIME="$(date)"
@@ -644,6 +644,7 @@ installOK() {
   printf "Visudo configuration\n"
   #arch-chroot /mnt sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
   arch-chroot /mnt sed --in-place '/# %wheel ALL=(ALL) ALL/c%wheel ALL=(ALL) ALL' /etc/sudoers
+
   printf "\n"
 
   # Create a new user and add it to the wheel group.
@@ -667,10 +668,11 @@ installOK() {
   cp -rf /etc/skel/. /mnt/home/$ui_username/
 
   # fix files permissions
-  chown -R $ui_username:$ui_username /mnt/home/$ui_username/
-  find /mnt/home/$ui_username/ -type f -print0 | xargs -0 chmod 664
-  find /mnt/home/$ui_username/ -type d -print0 | xargs -0 chmod 775
+  arch-chroot /mnt chown -R $ui_username:$ui_username /home/$ui_username/
+  arch-chroot /mnt find /home/$ui_username/ -type f -print0 | xargs -0 chmod 664
+  arch-chroot /mnt find /home/$ui_username/ -type d -print0 | xargs -0 chmod 775
 
+  # copy lightdm config
   cp -f /etc/lightdm/* /mnt/etc/lightdm
 
   read -p "Install done!. Press enter to continue..."
