@@ -659,7 +659,7 @@ installOK() {
   printf "Pacman configuration\n"
   #arch-chroot /mnt sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
   #arch-chroot /mnt sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
-  cat << PACMAN > /etc/pacman.conf
+  cat <<PACMAN > /mnt/etc/pacman.conf
 #
 # /etc/pacman.conf
 #
@@ -716,8 +716,8 @@ LocalFileSigLevel = Optional
 #   - local/custom mirrors can be added here or in separate files
 #   - repositories listed first will take precedence when packages
 #     have identical names, regardless of version number
-#   - URLs will have $repo replaced by the name of the current repo
-#   - URLs will have $arch replaced by the name of the architecture
+#   - URLs will have \$repo replaced by the name of the current repo
+#   - URLs will have \$arch replaced by the name of the architecture
 #
 # Repository entries are of the format:
 #       [repo-name]
@@ -765,7 +765,7 @@ Include = /etc/pacman.d/mirrorlist
 # archi3 repo
 [archi3-repo]
 SigLevel = Optional TrustAll
-Server = https://rtxx.github.io/$repo/$arch
+Server = https://rtxx.github.io/\$repo/\$arch
 
 PACMAN
 
