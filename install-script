@@ -639,11 +639,10 @@ installOK() {
   echo "root:$ui_rootpass" | arch-chroot /mnt chpasswd
   printf "\n"
 
-  #TODO: not working, user still not on wheel group
   # config visudo
   printf "Visudo configuration\n"
   #arch-chroot /mnt sed -i '/^# %wheel ALL=(ALL) ALL/s/^# //' /etc/sudoers
-  arch-chroot /mnt sed --in-place '/# %wheel ALL=(ALL) ALL/c%wheel ALL=(ALL) ALL' /etc/sudoers
+  arch-chroot /mnt sed --in-place '/# %wheel ALL=(ALL:ALL) ALL/c%wheel ALL=(ALL:ALL) ALL' /etc/sudoers
 
   printf "\n"
 
@@ -705,9 +704,9 @@ SigLevel    = Required DatabaseOptional
 LocalFileSigLevel = Optional
 #RemoteFileSigLevel = Required
 
-# NOTE: You must run `pacman-key --init` before first using pacman; the local
+# NOTE: You must run pacman-key --init before first using pacman; the local
 # keyring can then be populated with the keys of all official Arch Linux
-# packagers with `pacman-key --populate archlinux`.
+# packagers with pacman-key --populate archlinux.
 
 #
 # REPOSITORIES
